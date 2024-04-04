@@ -1,0 +1,3 @@
+#! /bin/ksh
+set -o errexit
+echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
