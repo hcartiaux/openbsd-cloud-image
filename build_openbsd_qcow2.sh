@@ -30,7 +30,6 @@ PATH_MIRROR="${TOP_DIR}/mirror"
 PATH_IMAGES="${TOP_DIR}/images"
 PATH_TFTP="${TOP_DIR}/tftp"
 
-
 OPENBSD_VERSION="7.4"
 v=${OPENBSD_VERSION//./}
 OPENBSD_ARCH=amd64
@@ -83,9 +82,7 @@ function check_for_programs {
 }
 
 function build_mirror {
-
     files="base${v}.tgz bsd bsd.mp bsd.rd comp${v}.tgz game${v}.tgz man${v}.tgz pxeboot xbase${v}.tgz xfont${v}.tgz xserv${v}.tgz xshare${v}.tgz"
-
 
     exec_cmd curl -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}" "${OPENBSD_TRUSTED_MIRROR}/openbsd-${v}-base.pub"
 
@@ -104,7 +101,6 @@ function build_mirror {
     exec_cmd cd "${TOP_DIR}"
     exec_cmd ln -sf ../custom/install.conf "${PATH_MIRROR}"
     exec_cmd ln -sf ../custom/disklabel    "${PATH_MIRROR}"
-
 }
 
 function start_mirror {
@@ -120,7 +116,6 @@ function start_mirror {
 
 function build_tftp {
     exec_cmd cd "${TOP_DIR}"
-
     exec_cmd mkdir -p "${PATH_TFTP}/etc"
     exec_cmd ln -sf "../mirror/pub/OpenBSD/${OPENBSD_VERSION}/amd64/pxeboot" tftp/auto_install
     exec_cmd ln -sf "../mirror/pub/OpenBSD/${OPENBSD_VERSION}/amd64/bsd.rd" tftp/bsd.rd
@@ -137,8 +132,8 @@ function launch_install {
     exec_cmd seq $(( $(tput lines) +3  )) | exec_cmd tr -dc '\n'
     # Start qemu
     exec_cmd qemu-system-x86_64 -action reboot=shutdown -boot once=n -enable-kvm -smp cpus=1 -m 512m   \
-                                -drive file="${IMAGE_NAME}",media=disk,if=virtio   \
-                                -device virtio-net-pci,netdev=n1 -nographic      \
+                                -drive file="${IMAGE_NAME}",media=disk,if=virtio                       \
+                                -device virtio-net-pci,netdev=n1 -nographic                            \
                                 -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install,hostfwd=tcp::2222-:22
 }
 
@@ -181,9 +176,9 @@ EOF
 # Check for options
 while [ $# -ge 1 ]; do
     case $1 in
-        -h | --help)     print_help;                                exit 0 ;;
-        -n | --dry-run)  DRY_RUN="DEBUG";                                  ;;
-        -b | --build)    RUN=1;                                            ;;
+        -h | --help)     print_help; exit 0 ;;
+        -n | --dry-run)  DRY_RUN="DEBUG";   ;;
+        -b | --build)    RUN=1;             ;;
     esac
     shift
 done
