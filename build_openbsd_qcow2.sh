@@ -37,8 +37,18 @@ OPENBSD_ARCH=amd64
 OPENBSD_TRUSTED_MIRROR="https://ftp.openbsd.org/pub/OpenBSD/${OPENBSD_VERSION}"
 OPENBSD_MIRROR="https://cdn.openbsd.org/pub/OpenBSD/${OPENBSD_VERSION}"
 
-IMAGE_SIZE=50G
+IMAGE_SIZE=50
 IMAGE_NAME="${PATH_IMAGES}/openbsd${v}_$(date +%Y-%m-%d).qcow2"
+
+QEMU_CPUS=1
+QEMU_MEM=512m
+
+DISKLABEL="custom/disklabel"
+INSTALLCONF="custom/install.conf"
+
+DISKLABEL_URL="http://${HTTP_SERVER}/disklabel"
+HTTP_SERVER=10.0.2.2
+HOST_NAME="openbsd"
 
 ### Functions
 
@@ -99,8 +109,14 @@ function build_mirror {
     exec_cmd signify -C -p "../openbsd-${v}-base.pub" -x SHA256.sig -- $files
 
     exec_cmd cd "${TOP_DIR}"
-    exec_cmd ln -sf ../custom/install.conf "${PATH_MIRROR}"
-    exec_cmd ln -sf ../custom/disklabel    "${PATH_MIRROR}"
+
+    exec_cmd cp -f "${INSTALLCONF}" "${PATH_MIRROR}"
+    exec_cmd sed -i "s/site[0-9]*.tgz/site${v}.tgz/"          "${INSTALLCONF}"
+    exec_cmd sed -i "s/\(disklabel = \).*$/\1$DISKLABEL_URL/" "${INSTALLCONF}"
+    exec_cmd sed -i "s/\(hostname = \).*$/\1$HOST_NAME/"      "${INSTALLCONF}"
+    exec_cmd sed -i "s/\(HTTP Server = \).*$/\1$HTTP_SERVER/" "${INSTALLCONF}"
+
+    exec_cmd ln -sf "../${DISKLABEL}"   "${PATH_MIRROR}"
 }
 
 function start_mirror {
@@ -124,16 +140,16 @@ function build_tftp {
 
 function create_image {
     exec_cmd mkdir -p "${PATH_IMAGES}"
-    exec_cmd qemu-img create -f qcow2 "${IMAGE_NAME}" "${IMAGE_SIZE}"
+    exec_cmd qemu-img create -f qcow2 "${IMAGE_NAME}" "${IMAGE_SIZE}G"
 }
 
 function launch_install {
     # Skip lines to preserve the output
     exec_cmd seq $(( $(tput lines) +3  )) | exec_cmd tr -dc '\n'
     # Start qemu
-    exec_cmd qemu-system-x86_64 -action reboot=shutdown -boot once=n -enable-kvm -smp cpus=1 -m 512m   \
-                                -drive file="${IMAGE_NAME}",media=disk,if=virtio                       \
-                                -device virtio-net-pci,netdev=n1 -nographic                            \
+    exec_cmd qemu-system-x86_64 -action reboot=shutdown -boot once=n -enable-kvm -smp cpus=$QEMU_CPUS -m $QEMU_MEM   \
+                                -drive file="${IMAGE_NAME}",media=disk,if=virtio                                      \
+                                -device virtio-net-pci,netdev=n1 -nographic                                           \
                                 -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install,hostfwd=tcp::2222-:22
 }
 
@@ -156,11 +172,34 @@ OPTIONS
   -h --help
     Display a help screen and quit.
 
-  -d --debug
-    Display extra debug output
+  -n --dry-run
+    No-op mode
 
   -b
     Build !
+
+  -s --size SIZE
+    QCow2 disk size in GB
+
+  --disklabel FILE
+    Path of your own disklabel file
+
+  --installconf FILE
+    Path of your own install.conf file
+
+    -r --release OPENBSD_VERSION
+      Specify the release (default: ${OPENBSD_VERSION})
+
+    --disklabel_url URL
+      URL of your own disklabel file (--disklabel will be ignored)
+
+    --host_name HOST_NAME
+      Hostname of the VM (default: ${HOST_NAME})
+
+    --HTTP_SERVER IP
+      IP of the HTTP mirror hosting the sets (default: ${HTTP_SERVER})
+
+
 
 AUTHOR
   Hyacinthe Cartiaux <Hyacinthe.Cartiaux@gmail.com>
@@ -176,9 +215,16 @@ EOF
 # Check for options
 while [ $# -ge 1 ]; do
     case $1 in
-        -h | --help)     print_help; exit 0 ;;
-        -n | --dry-run)  DRY_RUN="DEBUG";   ;;
-        -b | --build)    RUN=1;             ;;
+        -h | --help)     print_help; exit 0        ;;
+        -n | --dry-run)  DRY_RUN="DEBUG";          ;;
+        -b | --build)    RUN=1;                    ;;
+        -s | --size)     shift; IMAGE_SIZE=$1      ;;
+        --disklabel)     shift; DISKLABEL=$1       ;;
+        --installconf)   shift; INSTALLCONF=$1     ;;
+        -r | --release)  shift; OPENBSD_VERSION=$1 ;;
+        --disklabel_url) shift; DISKLABEL_URL=$1   ;;
+        --host_name)     shift; HOST_NAME=$1       ;;
+        --http_server)   shift; HTTP_SERVER=$1     ;;
     esac
     shift
 done
