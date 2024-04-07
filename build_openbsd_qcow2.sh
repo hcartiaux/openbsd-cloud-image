@@ -46,8 +46,8 @@ QEMU_MEM=512m
 DISKLABEL="custom/disklabel"
 INSTALLCONF="custom/install.conf"
 
-DISKLABEL_URL="http://${HTTP_SERVER}/disklabel"
 HTTP_SERVER=10.0.2.2
+DISKLABEL_URL="http://${HTTP_SERVER}/disklabel"
 HOST_NAME="openbsd"
 
 ### Functions
