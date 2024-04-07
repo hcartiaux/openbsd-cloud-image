@@ -204,7 +204,7 @@ OPTIONS
       IP of the HTTP mirror hosting the sets (default: ${HTTP_SERVER})
 
     --sshkey <PUB KEY FILE PATH>
-      Path to a SSH public key file (default: ${SSH_KEY})
+      Path to a SSH public key file for the root user (default: ${SSH_KEY_VAL})
 
 
 
