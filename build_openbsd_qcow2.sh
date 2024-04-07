@@ -46,6 +46,7 @@ QEMU_MEM=512m
 DISKLABEL="custom/disklabel"
 INSTALLCONF="custom/install.conf"
 
+SSH_KEY=none
 HTTP_SERVER=10.0.2.2
 DISKLABEL_URL="http://${HTTP_SERVER}/disklabel"
 HOST_NAME="openbsd"
@@ -110,13 +111,16 @@ function build_mirror {
     [[ "$?" != 0 ]] && fail "Signature verifications failed"
 
     exec_cmd cd "${TOP_DIR}"
-    exec_cmd cp -f "${INSTALLCONF}" "${PATH_MIRROR}"
-    exec_cmd sed -i "s!site[0-9]*.tgz!site${v}.tgz!"             "${INSTALLCONF}"
-    exec_cmd sed -i "s!\(disklabel.=.\).*\$!\1${DISKLABEL_URL}!" "${INSTALLCONF}"
-    exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"      "${INSTALLCONF}"
-    exec_cmd sed -i "s!\(HTTP.Server.=/\).*!$/\1${HTTP_SERVER}!" "${INSTALLCONF}"
+    exec_cmd cp -f "${INSTALLCONF}" "${PATH_MIRROR}/install.conf"
+    exec_cmd sed -i "s!site[0-9]*.tgz!site${v}.tgz!"             "${PATH_MIRROR}/install.conf"
+    exec_cmd sed -i "s!\(disklabel.=.\).*\$!\1${DISKLABEL_URL}!" "${PATH_MIRROR}/install.conf"
+    exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"      "${PATH_MIRROR}/install.conf"
+    exec_cmd sed -i "s!\(HTTP.Server.=/\).*!$/\1${HTTP_SERVER}!" "${PATH_MIRROR}/install.conf"
 
-    exec_cmd ln -sf "../${DISKLABEL}"   "${PATH_MIRROR}/disklabel"
+    SSH_KEY_VAL=$(cat $SSH_KEY)
+    exec_cmd echo "Public ssh key for root account = ${SSH_KEY_VAL}" | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
+
+    exec_cmd ln -sf "../${DISKLABEL}" "${PATH_MIRROR}/disklabel"
 }
 
 function start_mirror {
@@ -199,6 +203,9 @@ OPTIONS
     --HTTP_SERVER IP
       IP of the HTTP mirror hosting the sets (default: ${HTTP_SERVER})
 
+    --sshkey <PUB KEY FILE PATH>
+      Path to a SSH public key file (default: ${SSH_KEY})
+
 
 
 AUTHOR
@@ -221,6 +228,7 @@ while [ $# -ge 1 ]; do
         -s | --size)     shift; IMAGE_SIZE=$1      ;;
         --disklabel)     shift; DISKLABEL=$1       ;;
         --installconf)   shift; INSTALLCONF=$1     ;;
+        --sshkey)        shift; SSH_KEY=$1         ;;
         -r | --release)  shift; OPENBSD_VERSION=$1 ;;
         --disklabel_url) shift; DISKLABEL_URL=$1   ;;
         --host_name)     shift; HOST_NAME=$1       ;;
