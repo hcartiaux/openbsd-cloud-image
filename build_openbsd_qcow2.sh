@@ -107,6 +107,7 @@ function build_mirror {
     exec_cmd cd "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}"
     exec_cmd ls -l | tail -n +2 | exec_cmd tee index.txt
     exec_cmd signify -C -p "../openbsd-${v}-base.pub" -x SHA256.sig -- $files
+    [[ "$?" != 0 ]] && fail "Signature verifications failed"
 
     exec_cmd cd "${TOP_DIR}"
 
