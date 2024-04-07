@@ -121,7 +121,7 @@ function build_mirror {
 
 function start_mirror {
     exec_cmd bg sudo python3 -m http.server --directory mirror --bind 127.0.0.1 80
-    trap "report Stop the HTTP mirror server ; exec_cmd kill $(jobs -p)" EXIT
+    trap "report [7/7] Stop the HTTP mirror server ; exec_cmd kill $(jobs -p)" EXIT
     report Waiting for the HTTP mirror server to be available
     while [ ! "$(exec_cmd curl --silent 'http://127.0.0.1/install.conf')" ]
     do
@@ -145,11 +145,11 @@ function create_image {
 
 function launch_install {
     # Skip lines to preserve the output
-    exec_cmd seq $(( $(tput lines) +3  )) | exec_cmd tr -dc '\n'
+    exec_cmd seq $(( $(tput lines) + 2  )) | exec_cmd tr -dc '\n'
     # Start qemu
-    exec_cmd qemu-system-x86_64 -action reboot=shutdown -boot once=n -enable-kvm -smp cpus=$QEMU_CPUS -m $QEMU_MEM   \
-                                -drive file="${IMAGE_NAME}",media=disk,if=virtio                                      \
-                                -device virtio-net-pci,netdev=n1 -nographic                                           \
+    exec_cmd qemu-system-x86_64 -action reboot=shutdown -boot once=n -enable-kvm -smp cpus=$QEMU_CPUS -m $QEMU_MEM \
+                                -drive file="${IMAGE_NAME}",media=disk,if=virtio                                   \
+                                -device virtio-net-pci,netdev=n1 -nographic                                        \
                                 -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install,hostfwd=tcp::2222-:22
 }
 
@@ -233,11 +233,17 @@ if [[ -z "$RUN" ]]; then
     print_help
     exit 0
 else
+    report "[1/7] Check for dependencies"
     check_for_programs
+    report "[2/7] Build the HTTP mirror server directory"
     build_mirror
+    report "[3/7] Build the TFTP server directory for PXE boot"
     build_tftp
+    report "[4/7] Start the HTTP mirror server"
     start_mirror
+    report "[5/7] Create the QCow2 image file"
     create_image
+    report "[6/7] Boot the installer"
     launch_install
     # ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -o "Port 2222" root@127.0.0.1
 fi
