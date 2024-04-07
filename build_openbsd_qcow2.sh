@@ -110,12 +110,11 @@ function build_mirror {
     [[ "$?" != 0 ]] && fail "Signature verifications failed"
 
     exec_cmd cd "${TOP_DIR}"
-
     exec_cmd cp -f "${INSTALLCONF}" "${PATH_MIRROR}"
-    exec_cmd sed -i "s/site[0-9]*.tgz/site${v}.tgz/"          "${INSTALLCONF}"
-    exec_cmd sed -i "s/\(disklabel = \).*$/\1$DISKLABEL_URL/" "${INSTALLCONF}"
-    exec_cmd sed -i "s/\(hostname = \).*$/\1$HOST_NAME/"      "${INSTALLCONF}"
-    exec_cmd sed -i "s/\(HTTP Server = \).*$/\1$HTTP_SERVER/" "${INSTALLCONF}"
+    exec_cmd sed -i "s!site[0-9]*.tgz!site${v}.tgz!"             "${INSTALLCONF}"
+    exec_cmd sed -i "s!\(disklabel.=.\).*\$!\1${DISKLABEL_URL}!" "${INSTALLCONF}"
+    exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"      "${INSTALLCONF}"
+    exec_cmd sed -i "s!\(HTTP.Server.=/\).*!$/\1${HTTP_SERVER}!" "${INSTALLCONF}"
 
     exec_cmd ln -sf "../${DISKLABEL}"   "${PATH_MIRROR}"
 }
