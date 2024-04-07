@@ -1,10 +1,10 @@
-/		250M
-swap		80M-256M 10%
-/tmp		120M-4G	8%
-/var		80M-4G	13%
-/usr		1.5G-3G	5%
-/usr/X11R6	512M-1G	3%
-/usr/local	2G-10G	10%
-/usr/src	1G-2G	2%
-/usr/obj	1.3G-2G	4%
-/home		1G-*	45%
+/           150M-1G
+swap        80M-256M 10%
+/usr        1.5G-30G 5%
+/tmp        120M-4G  8%
+/var        80M-4G   13%
+/usr/X11R6  384M-1G  3%
+/usr/local  1G-20G   10%
+/usr/src    2G-5G    2%
+/usr/obj    5G-6G    4%
+/home       1G-*     45%
