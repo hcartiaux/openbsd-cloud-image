@@ -116,7 +116,7 @@ function build_mirror {
     exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"      "${INSTALLCONF}"
     exec_cmd sed -i "s!\(HTTP.Server.=/\).*!$/\1${HTTP_SERVER}!" "${INSTALLCONF}"
 
-    exec_cmd ln -sf "../${DISKLABEL}"   "${PATH_MIRROR}"
+    exec_cmd ln -sf "../${DISKLABEL}"   "${PATH_MIRROR}/disklabel"
 }
 
 function start_mirror {
