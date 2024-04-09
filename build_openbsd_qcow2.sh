@@ -2,9 +2,10 @@
 ################################################################################
 # Description : see the print_help function or launch 'build_openbsd_qcow2 --help'
 #
-# Based on Stefan Kreutz work:
+# Based on Stefan Kreutz and Gonéri Le Bouder works:
 # * https://www.skreutz.com/posts/autoinstall-openbsd-on-qemu/
 # * https://git.skreutz.com/autoinstall-openbsd-on-qemu.git/tree
+# * https://github.com/goneri/pcib/blob/master/plugins/package/cloud-init/tasks/77-cloud-init.sh
 #
 # Copyright (c) 2023 Hyacinthe Cartiaux <hyacinthe.cartiaux@gmail.com>
 # Copyright (c) 2020 Stefan Kreutz <mail@skreutz.com>
