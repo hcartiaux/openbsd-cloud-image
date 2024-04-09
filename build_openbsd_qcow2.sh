@@ -48,7 +48,6 @@ INSTALLCONF="custom/install.conf"
 
 SSH_KEY_VAL=none
 HTTP_SERVER=10.0.2.2
-DISKLABEL_URL="http://${HTTP_SERVER}/disklabel"
 HOST_NAME="openbsd"
 
 ### Functions
@@ -112,10 +111,10 @@ function build_mirror {
 
     exec_cmd cd "${TOP_DIR}"
     exec_cmd cp -f "${INSTALLCONF}" "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!site[0-9]*.tgz!site${v}.tgz!"             "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!\(disklabel.=.\).*\$!\1${DISKLABEL_URL}!" "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"      "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!\(HTTP.Server.=/\).*!$/\1${HTTP_SERVER}!" "${PATH_MIRROR}/install.conf"
+    exec_cmd sed -i "s!site[0-9]*.tgz!site${v}.tgz!"                            "${PATH_MIRROR}/install.conf"
+    exec_cmd sed -i "s!\(disklabel.=.\).*\$!\1http://${HTTP_SERVER}/disklabel!" "${PATH_MIRROR}/install.conf"
+    exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"                     "${PATH_MIRROR}/install.conf"
+    exec_cmd sed -i "s!\(HTTP.Server.=/\).*!$/\1${HTTP_SERVER}!"                "${PATH_MIRROR}/install.conf"
 
     [[ ! -z "$SSH_KEY" ]] && SSH_KEY_VAL=$(cat $SSH_KEY)
     exec_cmd echo "Public ssh key for root account = ${SSH_KEY_VAL}" | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
@@ -127,9 +126,12 @@ function start_mirror {
     exec_cmd bg sudo python3 -m http.server --directory mirror --bind 127.0.0.1 80
     trap "report [7/7] Stop the HTTP mirror server ; exec_cmd kill $(jobs -p)" EXIT
     report Waiting for the HTTP mirror server to be available
+    try=0
     while [ ! "$(exec_cmd curl --silent 'http://127.0.0.1/install.conf')" ]
     do
         exec_cmd sleep 1
+        try=$((try + 1))
+        [[ "$try" -gt 10 ]] && fail "Could not start the HTTP mirror server"
     done
     report HTTP mirror server reachable
 }
@@ -145,6 +147,7 @@ function build_tftp {
 function create_image {
     exec_cmd mkdir -p "${PATH_IMAGES}"
     exec_cmd qemu-img create -f qcow2 "${IMAGE_NAME}" "${IMAGE_SIZE}G"
+    [[ "$?" != 0 ]] && fail "Error while creating the image file ${IMAGE_NAME}"
 }
 
 function launch_install {
@@ -155,6 +158,7 @@ function launch_install {
                                 -drive file="${IMAGE_NAME}",media=disk,if=virtio                                   \
                                 -device virtio-net-pci,netdev=n1 -nographic                                        \
                                 -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install,hostfwd=tcp::2222-:22
+    [[ "$?" != 0 ]] && fail "Qemu returned an error"
 }
 
 ####
@@ -183,25 +187,22 @@ OPTIONS
     Build !
 
   -s --size SIZE
-    QCow2 disk size in GB
+    QCow2 disk size in GB (default: ${IMAGE_SIZE})
 
   --disklabel FILE
     Path of your own disklabel file
 
   --installconf FILE
-    Path of your own install.conf file
+    Path of your own install.conf file (served via http on the IP address of the next-server provided by qemu/DHCP)
 
     -r --release OPENBSD_VERSION
       Specify the release (default: ${OPENBSD_VERSION})
-
-    --disklabel_url URL
-      URL of your own disklabel file (--disklabel will be ignored)
 
     --host_name HOST_NAME
       Hostname of the VM (default: ${HOST_NAME})
 
     --HTTP_SERVER IP
-      IP of the HTTP mirror hosting the sets (default: ${HTTP_SERVER})
+      IP of the HTTP mirror hosting the sets and disklabel file (default: ${HTTP_SERVER})
 
     --sshkey <PUB KEY FILE PATH>
       Path to a SSH public key file for the root user (default: ${SSH_KEY_VAL})
@@ -230,12 +231,19 @@ while [ $# -ge 1 ]; do
         --installconf)   shift; INSTALLCONF=$1     ;;
         --sshkey)        shift; SSH_KEY=$1         ;;
         -r | --release)  shift; OPENBSD_VERSION=$1 ;;
-        --disklabel_url) shift; DISKLABEL_URL=$1   ;;
         --host_name)     shift; HOST_NAME=$1       ;;
         --http_server)   shift; HTTP_SERVER=$1     ;;
     esac
     shift
 done
+
+[[ ! "${IMAGE_SIZE}"      =~ ^[0-9]+$                                      ]] && fail "Invalid image size"
+[[ ! "${OPENBSD_VERSION}" =~ ^[0-9]+\.[0-9+]$                              ]] && fail "Invalid OpenBSD version"
+[[ ! "${HOST_NAME}"       =~ ^[a-z0-9-]+$                                  ]] && fail "Invalid hostname"
+[[ ! "${HTTP_SERVER}"     =~ ^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$ ]] && fail "${HTTP_SERVER} is not an IPv4"
+[[ ! -e "${DISKLABEL}"                                                     ]] && fail "Non existing disklabel file"
+[[ ! -e "${INSTALLCONF}"                                                   ]] && fail "Non existing install.conf file"
+[[ ! -z "${SSH_KEY}" && ! -e "${SSH_KEY}"                                  ]] && fail "Non existing SSH public key file"
 
 if [[ -z "$RUN" ]]; then
     print_help
@@ -253,6 +261,7 @@ else
     create_image
     report "[6/7] Boot the installer"
     launch_install
+    report "QCow2 image generated: ${IMAGE_NAME}"
     # ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -o "Port 2222" root@127.0.0.1
 fi
 
