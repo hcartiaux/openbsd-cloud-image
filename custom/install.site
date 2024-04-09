@@ -1,3 +1,41 @@
 #! /bin/ksh
 set -o errexit
+
+echo "Setting /etc/installurl"
 echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
+
+CLOUD_INIT_VERSION=24.1.4
+
+export PATH="/usr/local/bin:${PATH}"
+export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+
+pkgs="
+   bash
+   dmidecode
+   py3-configobj
+   py3-jinja2
+   py3-jsonschema
+   py3-oauthlib
+   py3-requests
+   py3-setuptools
+   py3-yaml
+   sudo--
+   wget
+"
+for pkg in ${pkgs}; do
+   echo "Installing ${pkg}"
+   pkg_add ${pkg}
+done
+
+cd /tmp
+
+echo "Downloading cloud-init ${CLOUD_INIT_VERSION}"
+wget "https://github.com/canonical/cloud-init/archive/refs/tags/${CLOUD_INIT_VERSION}.tar.gz"
+tar xzf ${CLOUD_INIT_VERSION}.tar.gz
+
+cd "cloud-init-${CLOUD_INIT_VERSION}"
+echo "Installing cloud-init"
+./tools/build-on-openbsd
+
+cd /tmp
+rm -r "/tmp/cloud-init-${CLOUD_INIT_VERSION}"
