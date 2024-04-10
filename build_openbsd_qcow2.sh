@@ -160,6 +160,9 @@ function launch_install {
                                 -device virtio-net-pci,netdev=n1 -nographic                                        \
                                 -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install,hostfwd=tcp::2222-:22
     [[ "$?" != 0 ]] && fail "Qemu returned an error"
+    exec_cmd qemu-img convert -O qcow2 -c ${IMAGE_NAME} ${IMAGE_NAME}_compressed
+    [[ "$?" != 0 ]] && fail "Qemu-img returned an error"
+    mv -f ${IMAGE_NAME}_compressed ${IMAGE_NAME}
 }
 
 ####
