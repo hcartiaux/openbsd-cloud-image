@@ -42,3 +42,7 @@ echo "Installing cloud-init"
 
 cd /tmp
 rm -r "/tmp/cloud-init-${CLOUD_INIT_VERSION}"
+
+# ds-identify do not support OpenBSD
+# see: https://github.com/canonical/cloud-init/issues/4711
+sed -i '/ds-identify/d' /etc/rc.local
