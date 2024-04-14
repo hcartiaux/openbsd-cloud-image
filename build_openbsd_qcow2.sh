@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S bash --posix
 ################################################################################
 # Description : see the print_help function or launch 'build_openbsd_qcow2 --help'
 #
