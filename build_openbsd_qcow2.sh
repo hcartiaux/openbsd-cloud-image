@@ -156,14 +156,20 @@ function create_image {
     [[ "$?" != 0 ]] && fail "Error while creating the image file ${IMAGE_NAME}"
 }
 
+function qemu_enable_kvm {
+    if grep -E 'vmx|svm' /proc/cpuinfo 2>&1 > /dev/null ; then
+        echo -n "-enable-kvm"
+    fi
+}
+
 function launch_install {
     # Skip lines to preserve the output
     exec_cmd seq $(( $(tput lines) + 2  )) | exec_cmd tr -dc '\n'
     # Start qemu
-    exec_cmd qemu-system-x86_64 -action reboot=shutdown -boot once=n -enable-kvm -smp cpus=$QEMU_CPUS -m $QEMU_MEM \
-                                -drive file="${IMAGE_NAME}",media=disk,if=virtio                                   \
-                                -device virtio-net-pci,netdev=n1 -nographic                                        \
-                                -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install,hostfwd=tcp::2222-:22
+    exec_cmd qemu-system-x86_64 $(qemu_enable_kvm) -nographic -action reboot=shutdown -boot once=n                 \
+                                -smp cpus=$QEMU_CPUS -m $QEMU_MEM -drive file="${IMAGE_NAME}",media=disk,if=virtio \
+                                -device virtio-net-pci,netdev=n1                                                   \
+                                -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install
     [[ "$?" != 0 ]] && fail "Qemu returned an error"
     exec_cmd qemu-img convert -O qcow2 -c ${IMAGE_NAME} ${IMAGE_NAME}_compressed
     [[ "$?" != 0 ]] && fail "Qemu-img returned an error"
