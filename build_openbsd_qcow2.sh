@@ -83,7 +83,6 @@ function check_program {
 }
 
 function check_for_programs {
-    check_program ssh
     check_program sudo
     if grep -E 'Debian|Ubuntu' /etc/os-release 2>&1 > /dev/null ; then
 	SIGNIFY_CMD=signify-openbsd
@@ -277,6 +276,5 @@ else
     report "[6/7] Boot the installer"
     launch_install
     report "QCow2 image generated: ${IMAGE_NAME}"
-    # ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -o "Port 2222" root@127.0.0.1
 fi
 
