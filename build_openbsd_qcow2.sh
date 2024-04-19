@@ -85,7 +85,12 @@ function check_program {
 function check_for_programs {
     check_program ssh
     check_program sudo
-    check_program signify
+    if grep -E 'Debian|Ubuntu' /etc/os-release 2>&1 > /dev/null ; then
+	SIGNIFY_CMD=signify-openbsd
+    else
+	SIGNIFY_CMD=signify
+    fi
+    check_program $SIGNIFY_CMD
     check_program qemu-img
     check_program qemu-system-x86_64
     check_program python3
@@ -107,7 +112,7 @@ function build_mirror {
 
     exec_cmd cd "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}"
     exec_cmd ls -l | tail -n +2 | exec_cmd tee index.txt
-    exec_cmd signify -C -p "../openbsd-${v}-base.pub" -x SHA256.sig -- $files
+    exec_cmd $SIGNIFY_CMD -C -p "../openbsd-${v}-base.pub" -x SHA256.sig -- $files
     [[ "$?" != 0 ]] && fail "Signature verifications failed"
 
     exec_cmd cd "${TOP_DIR}"
