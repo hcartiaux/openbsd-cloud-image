@@ -157,7 +157,7 @@ function create_image {
 
 function qemu_enable_kvm {
     if exec_cmd grep -E 'vmx|svm' /proc/cpuinfo 2>&1 > /dev/null ; then
-        echo -n "-enable-kvm"
+        [[ -w /dev/kvm ]] && echo -n "-enable-kvm"
     fi
 }
 
