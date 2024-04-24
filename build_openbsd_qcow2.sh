@@ -42,7 +42,7 @@ IMAGE_SIZE=40
 IMAGE_NAME="${PATH_IMAGES}/openbsd${v}_$(date +%Y-%m-%d).qcow2"
 
 QEMU_CPUS=1
-QEMU_MEM=512m
+QEMU_MEM=384m
 
 DISKLABEL="custom/disklabel"
 INSTALLCONF="custom/install.conf"
