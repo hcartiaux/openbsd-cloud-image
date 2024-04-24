@@ -22,7 +22,7 @@ jobs:
         - name: build !
           run: |
             ./build_openbsd_qcow2.sh -r ${{github.event.inputs.release}} --image-file openbsd.qcow2 -b
-        - uses: actions/upload-artifact@v1
+        - uses: actions/upload-artifact@v4
           with:
               name: openbsd.qcow2
               path: images/openbsd.qcow2
