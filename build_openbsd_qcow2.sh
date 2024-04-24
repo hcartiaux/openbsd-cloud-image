@@ -200,6 +200,9 @@ OPTIONS
   -b
     Build !
 
+  --image-file FILE_NAME
+    File name of the image file, created in ./images (default: $(basename $IMAGE_NAME)
+
   -s --size SIZE
     QCow2 disk size in GB (default: ${IMAGE_SIZE})
 
@@ -237,16 +240,17 @@ EOF
 # Check for options
 while [ $# -ge 1 ]; do
     case $1 in
-        -h | --help)     print_help; exit 0        ;;
-        -n | --dry-run)  DRY_RUN="DEBUG";          ;;
-        -b | --build)    RUN=1;                    ;;
-        -s | --size)     shift; IMAGE_SIZE=$1      ;;
-        --disklabel)     shift; DISKLABEL=$1       ;;
-        --installconf)   shift; INSTALLCONF=$1     ;;
-        --sshkey)        shift; SSH_KEY=$1         ;;
-        -r | --release)  shift; OPENBSD_VERSION=$1 ;;
-        --host_name)     shift; HOST_NAME=$1       ;;
-        --http_server)   shift; HTTP_SERVER=$1     ;;
+        -h | --help)     print_help; exit 0                  ;;
+        -n | --dry-run)  DRY_RUN="DEBUG";                    ;;
+        -b | --build)    RUN=1;                              ;;
+        --image-file)    shift; IMAGE_NAME=${PATH_IMAGES}/$1 ;;
+        -s | --size)     shift; IMAGE_SIZE=$1                ;;
+        --disklabel)     shift; DISKLABEL=$1                 ;;
+        --installconf)   shift; INSTALLCONF=$1               ;;
+        --sshkey)        shift; SSH_KEY=$1                   ;;
+        -r | --release)  shift; OPENBSD_VERSION=$1           ;;
+        --host_name)     shift; HOST_NAME=$1                 ;;
+        --http_server)   shift; HTTP_SERVER=$1               ;;
     esac
     shift
 done
