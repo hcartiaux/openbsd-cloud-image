@@ -156,7 +156,7 @@ function create_image {
 }
 
 function qemu_enable_kvm {
-    if grep -E 'vmx|svm' /proc/cpuinfo 2>&1 > /dev/null ; then
+    if exec_cmd grep -E 'vmx|svm' /proc/cpuinfo 2>&1 > /dev/null ; then
         echo -n "-enable-kvm"
     fi
 }
@@ -172,7 +172,7 @@ function launch_install {
     [[ "$?" != 0 ]] && fail "Qemu returned an error"
     exec_cmd qemu-img convert -O qcow2 -c ${IMAGE_NAME} ${IMAGE_NAME}_compressed
     [[ "$?" != 0 ]] && fail "Qemu-img returned an error"
-    mv -f ${IMAGE_NAME}_compressed ${IMAGE_NAME}
+    exec_cmd mv -f ${IMAGE_NAME}_compressed ${IMAGE_NAME}
 }
 
 ####
