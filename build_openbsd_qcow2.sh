@@ -32,7 +32,6 @@ PATH_IMAGES="${TOP_DIR}/images"
 PATH_TFTP="${TOP_DIR}/tftp"
 
 OPENBSD_VERSION="7.5"
-v=${OPENBSD_VERSION//./}
 OPENBSD_ARCH=amd64
 
 OPENBSD_TRUSTED_MIRROR="https://ftp.openbsd.org/pub/OpenBSD/${OPENBSD_VERSION}"
@@ -50,7 +49,6 @@ INSTALLCONF="custom/install.conf"
 SSH_KEY_VAL=none
 HTTP_SERVER=10.0.2.2
 HOST_NAME="openbsd"
-SETS=site75.tgz
 
 ### Functions
 
@@ -253,7 +251,7 @@ while [ $# -ge 1 ]; do
         -r | --release)  shift; OPENBSD_VERSION=$1           ;;
         --host_name)     shift; HOST_NAME=$1                 ;;
         --http_server)   shift; HTTP_SERVER=$1               ;;
-        --sets)          shift; SETS="$1 ${SETS}"            ;;
+        --sets)          shift; SETS="$1"                    ;;
     esac
     shift
 done
@@ -270,6 +268,9 @@ if [[ -z "$RUN" ]]; then
     print_help
     exit 0
 else
+    v=${OPENBSD_VERSION//./}
+    SETS="${SETS} site${v}.tgz"
+
     report "[1/7] Check for dependencies"
     check_for_programs
     report "[2/7] Build the HTTP mirror server directory"
