@@ -119,8 +119,7 @@ function build_mirror {
     exec_cmd sed -i "s!site[0-9]*.tgz!site${v}.tgz!"                            "${PATH_MIRROR}/install.conf"
     exec_cmd sed -i "s!\(disklabel.=.\).*\$!\1http://${HTTP_SERVER}/disklabel!" "${PATH_MIRROR}/install.conf"
     exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"                     "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!\(HTTP.Server.=/\).*!$/\1${HTTP_SERVER}!"                "${PATH_MIRROR}/install.conf"
-
+    exec_cmd sed -i "s!\(HTTP.Server.=.\).*\$!\1${HTTP_SERVER}!"                "${PATH_MIRROR}/install.conf"
     [[ ! -z "$SSH_KEY" ]] && SSH_KEY_VAL=$(cat $SSH_KEY)
     exec_cmd echo "Public ssh key for root account = ${SSH_KEY_VAL}" | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
 
@@ -218,7 +217,7 @@ OPTIONS
     --host_name HOST_NAME
       Hostname of the VM (default: ${HOST_NAME})
 
-    --HTTP_SERVER IP
+    --http_server IP
       IP of the HTTP mirror hosting the sets and disklabel file (default: ${HTTP_SERVER})
 
     --sshkey <PUB KEY FILE PATH>
