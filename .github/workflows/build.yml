@@ -53,3 +53,30 @@ jobs:
                 echo "== Connection attempt ${try} =="
             done
             echo "== System image is bootable ! :) =="
+
+    release:
+        needs: test
+        runs-on: ubuntu-latest
+        permissions: write-all
+        steps:
+        - name: Check out the repository to the runner
+          uses: actions/checkout@v4
+        - name: Generate tag name
+          run: echo "tag=v${{ github.event.inputs.release }}_$(date +'%Y-%m-%d-%H-%M')" >> "$GITHUB_ENV"
+        - uses: actions/download-artifact@v4
+          with:
+            name: openbsd.qcow2
+            path: .
+        - name: Create a new release
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            gh release create "${tag}" \
+                --repo="$GITHUB_REPOSITORY" \
+                --title="OpenBSD Cloud Image ${tag}" \
+                --generate-notes
+        - name: Upload the Qcow2 image
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            gh release upload "${tag}" openbsd.qcow2
