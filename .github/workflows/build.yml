@@ -19,7 +19,7 @@ jobs:
           uses: actions/checkout@v4
         - name: Install dependencies
           run: sudo apt update ; sudo apt install -y signify-openbsd signify-openbsd-keys qemu-system
-        - name: build !
+        - name: Build !
           run: |
             ./build_openbsd_qcow2.sh -r ${{github.event.inputs.release}} --image-file openbsd.qcow2 -b
         - uses: actions/upload-artifact@v4
@@ -39,9 +39,9 @@ jobs:
           run: sudo apt update ; sudo apt install -y qemu-system netcat-openbsd
         - name: Boot the system image
           run: |
-              set -x
-              qemu-system-x86_64 -smp cpus=1 -m 384m -drive file="images/openbsd.qcow2",media=disk,if=virtio \
-                 -device virtio-net-pci,netdev=n1 -nographic -netdev user,id=n1,hostfwd=tcp::2222-:22 &
+            set -x
+            qemu-system-x86_64 -smp cpus=1 -m 384m -drive file="images/openbsd.qcow2",media=disk,if=virtio \
+               -device virtio-net-pci,netdev=n1 -nographic -netdev user,id=n1,hostfwd=tcp::2222-:22 &
         - name: Wait for the VM to boot
           run: |
             while [[ ! $(timeout 1 nc localhost 2222) ]] ; do
