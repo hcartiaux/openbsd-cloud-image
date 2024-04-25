@@ -50,6 +50,7 @@ INSTALLCONF="custom/install.conf"
 SSH_KEY_VAL=none
 HTTP_SERVER=10.0.2.2
 HOST_NAME="openbsd"
+SETS=site75.tgz
 
 ### Functions
 
@@ -121,6 +122,7 @@ function build_mirror {
     exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"                     "${PATH_MIRROR}/install.conf"
     exec_cmd sed -i "s!\(HTTP.Server.=.\).*\$!\1${HTTP_SERVER}!"                "${PATH_MIRROR}/install.conf"
     [[ ! -z "$SSH_KEY" ]] && SSH_KEY_VAL=$(cat $SSH_KEY)
+    exec_cmd echo "Set name(s) = ${SETS}"                            | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
     exec_cmd echo "Public ssh key for root account = ${SSH_KEY_VAL}" | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
 
     exec_cmd ln -sf "../${DISKLABEL}" "${PATH_MIRROR}/disklabel"
@@ -223,7 +225,8 @@ OPTIONS
     --sshkey <PUB KEY FILE PATH>
       Path to a SSH public key file for the root user (default: ${SSH_KEY_VAL})
 
-
+    --sets "<SET NAMES>"
+      Specify the sets to be installed (default: ${SETS})
 
 AUTHOR
   Hyacinthe Cartiaux <Hyacinthe.Cartiaux@gmail.com>
@@ -250,6 +253,7 @@ while [ $# -ge 1 ]; do
         -r | --release)  shift; OPENBSD_VERSION=$1           ;;
         --host_name)     shift; HOST_NAME=$1                 ;;
         --http_server)   shift; HTTP_SERVER=$1               ;;
+        --sets)          shift; SETS="$1 ${SETS}"            ;;
     esac
     shift
 done
