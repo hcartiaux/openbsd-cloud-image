@@ -1,9 +1,11 @@
 #! /bin/ksh
 set -o errexit
 
-echo "Setting /etc/installurl"
+# Setting /etc/installurl
 echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
 
+
+# Install cloud-init
 CLOUD_INIT_VERSION=24.1.4
 
 export PATH="/usr/local/bin:${PATH}"
@@ -46,3 +48,7 @@ rm -r "/tmp/cloud-init-${CLOUD_INIT_VERSION}"
 # ds-identify does not support OpenBSD
 # see: https://github.com/canonical/cloud-init/issues/4711
 sed -i '/ds-identify/d' /etc/rc.local
+
+
+# Clean-up the network config
+rm -f /etc/resolv.conf /etc/hostname.*
