@@ -22,10 +22,17 @@ jobs:
         - name: Build !
           run: |
             ./build_openbsd_qcow2.sh -r ${{github.event.inputs.release}} --image-file openbsd.qcow2 -b
+        - name: Generate the checksum file
+          run: |
+            sha256sum images/openbsd.qcow2 > images/openbsd.qcow2.sha256
         - uses: actions/upload-artifact@v4
           with:
               name: openbsd.qcow2
               path: images/openbsd.qcow2
+        - uses: actions/upload-artifact@v4
+          with:
+              name: openbsd.qcow2.sha256
+              path: images/openbsd.qcow2.sha256
 
     test:
         needs: build
@@ -35,6 +42,13 @@ jobs:
           with:
             name: openbsd.qcow2
             path: images
+        - uses: actions/download-artifact@v4
+          with:
+            name: openbsd.qcow2.sha256
+            path: images
+        - name: Verify the checksum
+          run: |
+            sha256sum -c images/openbsd.qcow2.sha256
         - name: Install dependencies
           run: sudo apt update ; sudo apt install -y qemu-system netcat-openbsd
         - name: Boot the system image
@@ -68,7 +82,14 @@ jobs:
         - uses: actions/download-artifact@v4
           with:
             name: openbsd.qcow2
-            path: .
+            path: images
+        - uses: actions/download-artifact@v4
+          with:
+            name: openbsd.qcow2.sha256
+            path: images
+        - name: Verify the checksum
+          run: |
+            sha256sum -c images/openbsd.qcow2.sha256
         - name: Create a new release
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,4 +102,4 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
-            gh release upload "${tag}" openbsd.qcow2
+            gh release upload "${tag}" images/openbsd.qcow2
