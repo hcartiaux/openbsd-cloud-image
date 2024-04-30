@@ -98,8 +98,9 @@ jobs:
                 --repo="$GITHUB_REPOSITORY" \
                 --title="OpenBSD Cloud Image ${tag}" \
                 --generate-notes
-        - name: Upload the Qcow2 image
+        - name: Upload the Qcow2 image and checksum file
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
             gh release upload "${tag}" images/openbsd.qcow2
+            gh release upload "${tag}" images/openbsd.qcow2.sha256
