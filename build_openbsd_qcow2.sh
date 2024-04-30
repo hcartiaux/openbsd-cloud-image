@@ -37,7 +37,7 @@ OPENBSD_ARCH=amd64
 OPENBSD_TRUSTED_MIRROR="https://ftp.openbsd.org/pub/OpenBSD/${OPENBSD_VERSION}"
 OPENBSD_MIRROR="https://cdn.openbsd.org/pub/OpenBSD/${OPENBSD_VERSION}"
 
-IMAGE_SIZE=40
+IMAGE_SIZE=20
 IMAGE_NAME="${PATH_IMAGES}/openbsd${v}_$(date +%Y-%m-%d).qcow2"
 
 QEMU_CPUS=2
