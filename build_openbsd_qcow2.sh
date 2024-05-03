@@ -98,11 +98,11 @@ function check_for_programs {
 function build_mirror {
     files="base${v}.tgz bsd bsd.mp bsd.rd comp${v}.tgz game${v}.tgz man${v}.tgz pxeboot xbase${v}.tgz xfont${v}.tgz xserv${v}.tgz xshare${v}.tgz"
 
-    exec_cmd curl -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}" "${OPENBSD_TRUSTED_MIRROR}/openbsd-${v}-base.pub"
+    exec_cmd curl --fail -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}" "${OPENBSD_TRUSTED_MIRROR}/openbsd-${v}-base.pub"
 
     for i in $files SHA256.sig
     do
-        exec_cmd curl -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}" "${OPENBSD_MIRROR}/${OPENBSD_ARCH}/$i"
+        exec_cmd curl --fail -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}" "${OPENBSD_MIRROR}/${OPENBSD_ARCH}/$i"
     done
 
     exec_cmd cd "${TOP_DIR}/custom"
@@ -131,7 +131,7 @@ function start_mirror {
     trap "report [7/7] Stop the HTTP mirror server ; exec_cmd kill $(jobs -p)" EXIT
     report Waiting for the HTTP mirror server to be available
     try=0
-    while [ ! "$(exec_cmd curl --silent 'http://127.0.0.1/install.conf')" ]
+    while [ ! "$(exec_cmd curl --fail --silent 'http://127.0.0.1/install.conf')" ]
     do
         exec_cmd sleep 1
         try=$((try + 1))
