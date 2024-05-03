@@ -34,8 +34,10 @@ PATH_TFTP="${TOP_DIR}/tftp"
 OPENBSD_VERSION="7.5"
 OPENBSD_ARCH=amd64
 
-OPENBSD_TRUSTED_MIRROR="https://ftp.openbsd.org/pub/OpenBSD/${OPENBSD_VERSION}"
-OPENBSD_MIRROR="https://cdn.openbsd.org/pub/OpenBSD/${OPENBSD_VERSION}"
+OPENBSD_TRUSTED_MIRROR_BASE="https://ftp.openbsd.org/pub/OpenBSD"
+OPENBSD_MIRROR_BASE="https://cdn.openbsd.org/pub/OpenBSD"
+OPENBSD_TRUSTED_MIRROR=""
+OPENBSD_MIRROR=""
 
 IMAGE_SIZE=20
 IMAGE_NAME="${PATH_IMAGES}/openbsd${v}_$(date +%Y-%m-%d).qcow2"
@@ -270,6 +272,8 @@ if [[ -z "$RUN" ]]; then
 else
     v=${OPENBSD_VERSION//./}
     SETS="${SETS} site${v}.tgz"
+    OPENBSD_MIRROR="${OPENBSD_MIRROR_BASE}/${OPENBSD_VERSION}"
+    OPENBSD_TRUSTED_MIRROR="${OPENBSD_TRUSTED_MIRROR_BASE}/${OPENBSD_VERSION}"
 
     report "[1/7] Check for dependencies"
     check_for_programs
