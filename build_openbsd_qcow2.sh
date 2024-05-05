@@ -85,7 +85,7 @@ function check_program {
 
 function check_for_programs {
     check_program sudo
-    if grep -E 'Debian|Ubuntu' /etc/os-release 2>&1 > /dev/null ; then
+    if grep -E 'Debian|Ubuntu' /etc/os-release > /dev/null 2>&1; then
 	SIGNIFY_CMD=signify-openbsd
     else
 	SIGNIFY_CMD=signify
@@ -157,7 +157,7 @@ function create_image {
 }
 
 function qemu_enable_kvm {
-    if exec_cmd grep -E 'vmx|svm' /proc/cpuinfo 2>&1 > /dev/null ; then
+    if exec_cmd grep -E 'vmx|svm' /proc/cpuinfo > /dev/null 2>&1; then
         [[ -w /dev/kvm ]] && echo -n "-enable-kvm"
     fi
 }
