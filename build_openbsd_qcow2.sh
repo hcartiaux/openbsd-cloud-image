@@ -39,7 +39,7 @@ OPENBSD_MIRROR_BASE="https://cdn.openbsd.org/pub/OpenBSD"
 OPENBSD_TRUSTED_MIRROR=""
 OPENBSD_MIRROR=""
 
-IMAGE_SIZE=20
+IMAGE_SIZE=2
 IMAGE_NAME="${PATH_IMAGES}/openbsd${v}_$(date +%Y-%m-%d).qcow2"
 
 QEMU_CPUS=2
@@ -98,7 +98,7 @@ function check_for_programs {
 }
 
 function build_mirror {
-    files="base${v}.tgz bsd bsd.mp bsd.rd comp${v}.tgz game${v}.tgz man${v}.tgz pxeboot xbase${v}.tgz xfont${v}.tgz xserv${v}.tgz xshare${v}.tgz"
+    files="base${v}.tgz bsd bsd.mp bsd.rd comp${v}.tgz man${v}.tgz pxeboot"
 
     exec_cmd curl --fail -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}" "${OPENBSD_TRUSTED_MIRROR}/openbsd-${v}-base.pub"
 
@@ -108,7 +108,7 @@ function build_mirror {
     done
 
     exec_cmd cd "${TOP_DIR}/custom"
-    exec_cmd tar -czf "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/amd64/site${v}.tgz" install.site
+    exec_cmd tar -czf "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/amd64/site${v}.tgz" install.site create_partitions.sh
 
     exec_cmd cd "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}"
     exec_cmd ls -l | tail -n +2 | exec_cmd tee index.txt
