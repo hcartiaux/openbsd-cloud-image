@@ -39,7 +39,7 @@ OPENBSD_MIRROR_BASE="https://cdn.openbsd.org/pub/OpenBSD"
 OPENBSD_TRUSTED_MIRROR=""
 OPENBSD_MIRROR=""
 
-IMAGE_SIZE=20
+IMAGE_SIZE=8
 IMAGE_NAME="${PATH_IMAGES}/openbsd${v}_$(date +%Y-%m-%d).qcow2"
 
 QEMU_CPUS=2
