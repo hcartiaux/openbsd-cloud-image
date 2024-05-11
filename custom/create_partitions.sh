@@ -24,6 +24,9 @@ function add_swap {
 
     echo "Adding swap (size=${size})"
     echo "b\n\n*\na\n\n\n${size}\n\n\nw\n"| disklabel -v -f /etc/fstab -E "${DISK}"
+    if [ "$?" -ne 0 ]; then
+        echo "Error during swap partition creation"
+    fi
 }
 
 function add_part {
@@ -32,16 +35,18 @@ function add_part {
 
     echo "Adding ${path} (size=${size})"
     echo "b\n\n*\na\n\n\n${size}\n\n${path}\nw\n"| disklabel -v -f /etc/fstab -E "${DISK}"
-    mkdir -p ${path}
     new_dev=$(grep " ${path} " /etc/fstab|cut -d " " -f 1|sed 's,/dev/,,')
     newfs ${new_dev}
 
-    if [ -d ${path} ]; then
+    if [ "$?" -eq 0 ]; then
+        mkdir -p ${path}
         mv ${path} ${path}.orig
         mkdir -p ${path}
         mount ${path}
         cp -Rp  ${path}.orig/* ${path}
         rm -r ${path}.orig
+    else
+        echo "Error during partition and filesystem creation"
     fi
 }
 
