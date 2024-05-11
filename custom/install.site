@@ -52,3 +52,6 @@ sed -i '/ds-identify/d' /etc/rc.local
 
 # Clean-up the network config
 rm -f /etc/resolv.conf /etc/hostname.*
+
+echo "\n\nThe cloud-image comes with a minimalist / partition. You can use the remaining disk space by adjusting /create_partitions.sh to match your expectation and run the script as root."  >> /etc/motd
+

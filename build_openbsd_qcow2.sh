@@ -108,7 +108,7 @@ function build_mirror {
     done
 
     exec_cmd cd "${TOP_DIR}/custom"
-    exec_cmd tar -czf "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/amd64/site${v}.tgz" install.site
+    exec_cmd tar -czf "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/amd64/site${v}.tgz" install.site create_partitions.sh
 
     exec_cmd cd "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}"
     exec_cmd ls -l | tail -n +2 | exec_cmd tee index.txt
