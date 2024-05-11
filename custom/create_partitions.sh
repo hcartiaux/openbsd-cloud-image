@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 
+# Script installed by install.site during the qcow2 image generation
+# cf. https://github.com/hcartiaux/openbsd-cloud-image/
+
+DISK=$(df / | tail -n1 | sed 's,/dev/\([^ ]*\)a.*,\1,')
+
 function stop_services {
     /etc/rc.d/sndiod stop
     /etc/rc.d/ntpd stop
@@ -18,7 +23,7 @@ function add_swap {
     size=$1
 
     echo "Adding swap (size=${size})"
-    echo "b\n\n*\na\n\n\n${size}\n\n\nw\n"| disklabel -v -f /etc/fstab -E sd0
+    echo "b\n\n*\na\n\n\n${size}\n\n\nw\n"| disklabel -v -f /etc/fstab -E "${DISK}"
 }
 
 function add_part {
@@ -26,7 +31,7 @@ function add_part {
     size=$2
 
     echo "Adding ${path} (size=${size})"
-    echo "b\n\n*\na\n\n\n${size}\n\n${path}\nw\n"| disklabel -v -f /etc/fstab -E sd0
+    echo "b\n\n*\na\n\n\n${size}\n\n${path}\nw\n"| disklabel -v -f /etc/fstab -E "${DISK}"
     mkdir -p ${path}
     new_dev=$(grep " ${path} " /etc/fstab|cut -d " " -f 1|sed 's,/dev/,,')
     newfs ${new_dev}
