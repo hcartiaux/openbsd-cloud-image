@@ -45,6 +45,7 @@ function add_part {
     fi
 }
 
+stop_services
 add_swap 400m
 add_part /tmp 1000m
 add_part /var 4000m
@@ -53,5 +54,5 @@ add_part /usr/local 6000m
 add_part /usr/src 2000m
 add_part /usr/obj 2000m
 add_part /home    '*'
-
+start_services
 
