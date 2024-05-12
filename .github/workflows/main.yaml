@@ -12,20 +12,39 @@ on:
         type: string
 
 jobs:
-    build:
+    build-generic:
         uses: hcartiaux/openbsd-cloud-image/.github/workflows/build.yml@main
         with:
-            filename: openbsd.qcow2
             release: ${{inputs.release}}
+            filename: openbsd-generic.qcow2
+            size: 30
+            disklabel: custom/disklabel
+            sets: all
+            allow_root_ssh: yes
+    build-min:
+        uses: hcartiaux/openbsd-cloud-image/.github/workflows/build.yml@main
+        with:
+            filename: openbsd-min.qcow2
+            release: ${{inputs.release}}
+            size: 2
+            disklabel: custom/disklabel.cloud
+            sets: -game*.tgz -x*.tgz
+            allow_root_ssh: no
 
-    test:
-        needs: build
+    test-generic:
+        needs: build-generic
         uses: hcartiaux/openbsd-cloud-image/.github/workflows/test.yml@main
         with:
-            filename: openbsd.qcow2
+            filename: openbsd-generic.qcow2
+
+    test-min:
+        needs: build-min
+        uses: hcartiaux/openbsd-cloud-image/.github/workflows/test.yml@main
+        with:
+            filename: openbsd-min.qcow2
 
     release:
-        needs: test
+        needs: [test-generic,test-min]
         runs-on: ubuntu-latest
         permissions: write-all
         environment:
@@ -37,15 +56,26 @@ jobs:
           run: echo "tag=v${{ github.event.inputs.release }}_$(date +'%Y-%m-%d-%H-%M')" >> "$GITHUB_ENV"
         - uses: actions/download-artifact@v4
           with:
-            name: openbsd.qcow2
+            name: openbsd-generic.qcow2
             path: images
         - uses: actions/download-artifact@v4
           with:
-            name: openbsd.qcow2.sha256
+            name: openbsd-generic.qcow2.sha256
             path: images
         - name: Verify the checksum
           run: |
-            sha256sum -c images/openbsd.qcow2.sha256
+            sha256sum -c images/openbsd-generic.qcow2.sha256
+        - uses: actions/download-artifact@v4
+          with:
+            name: openbsd-min.qcow2
+            path: images
+        - uses: actions/download-artifact@v4
+          with:
+            name: openbsd-min.qcow2.sha256
+            path: images
+        - name: Verify the checksum
+          run: |
+            sha256sum -c images/openbsd-min.qcow2.sha256
         - name: Create a new release
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -58,5 +88,7 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
-            gh release upload "${tag}" images/openbsd.qcow2
-            gh release upload "${tag}" images/openbsd.qcow2.sha256
+            gh release upload "${tag}" images/openbsd-generic.qcow2
+            gh release upload "${tag}" images/openbsd-generic.qcow2.sha256
+            gh release upload "${tag}" images/openbsd-min.qcow2
+            gh release upload "${tag}" images/openbsd-min.qcow2.sha256
