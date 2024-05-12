@@ -1,4 +1,4 @@
-name: Generic test workflow (reusable)
+name: Generic test (reusable workflow)
 
 on:
   workflow_call:

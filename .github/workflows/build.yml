@@ -1,4 +1,4 @@
-name: Generic build workflow (reusable)
+name: Generic build (reusable workflow)
 
 on:
   workflow_call:
