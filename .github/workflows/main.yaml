@@ -20,7 +20,7 @@ jobs:
             size: 30
             disklabel: custom/disklabel
             sets: all
-            allow_root_ssh: yes
+            allow_root_ssh: no
     build-min:
         uses: hcartiaux/openbsd-cloud-image/.github/workflows/build.yml@main
         with:
