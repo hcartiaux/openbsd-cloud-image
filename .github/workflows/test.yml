@@ -27,7 +27,9 @@ jobs:
         - name: Install dependencies
           run: sudo apt update ; sudo apt install -y qemu-system netcat-openbsd genisoimage
         - name: Generate ssh keys
-          run: ssh-keygen -N ""
+          run: |
+            mkdir -p ~/.ssh
+            ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ""
         - name: generate cloud-init user-data configuration file
           run: |
             echo '#cloud-config'                   > user-data
