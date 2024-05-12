@@ -1,0 +1,56 @@
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: 'OpenBSD release'
+        default: '7.5'
+        required: true
+        type: string
+      filename:
+        description: 'Qcow2 image filename'
+        default: 'openbsd.qcow2'
+        required: false
+        type: string
+      size:
+        description: 'Qcow2 image size (GB)'
+        default: '20'
+        required: false
+        type: string
+      disklabel:
+        description: 'Disklabel filename'
+        default: 'custom/disklabel'
+        required: false
+        type: string
+      sets:
+        description: 'OpenBSD sets'
+        default: '*'
+        required: false
+        type: string
+      allow_root_ssh:
+        description: 'Allow root ssh login (yes|no)'
+        default: 'yes'
+        required: false
+        type: string
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Check out the repository to the runner
+          uses: actions/checkout@v4
+        - name: Install dependencies
+          run: sudo apt update ; sudo apt install -y signify-openbsd signify-openbsd-keys qemu-system
+        - name: Build !
+          run: |
+            ./build_openbsd_qcow2.sh -r ${{inputs.release}} --image-file ${{inputs.filename}} --size ${{inputs.size}} --disklabel ${{inputs.disklabel}} --sets ${{inputs.sets}} --allow_root_ssh ${{allow_root_ssh}} -b
+        - name: Generate the checksum file
+          run: |
+            sha256sum images/${{inputs.filename}} > images/${{inputs.filename}}.sha256
+        - uses: actions/upload-artifact@v4
+          with:
+              name: ${{inputs.filename}}
+              path: images/openbsd.qcow2
+        - uses: actions/upload-artifact@v4
+          with:
+              name: ${{inputs.filename}}sha256
+              path: images/openbsd.qcow2.sha256

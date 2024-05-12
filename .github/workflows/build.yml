@@ -13,26 +13,9 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-latest
-        steps:
-        - name: Check out the repository to the runner
-          uses: actions/checkout@v4
-        - name: Install dependencies
-          run: sudo apt update ; sudo apt install -y signify-openbsd signify-openbsd-keys qemu-system
-        - name: Build !
-          run: |
-            ./build_openbsd_qcow2.sh -r ${{github.event.inputs.release}} --image-file openbsd.qcow2 -b
-        - name: Generate the checksum file
-          run: |
-            sha256sum images/openbsd.qcow2 > images/openbsd.qcow2.sha256
-        - uses: actions/upload-artifact@v4
-          with:
-              name: openbsd.qcow2
-              path: images/openbsd.qcow2
-        - uses: actions/upload-artifact@v4
-          with:
-              name: openbsd.qcow2.sha256
-              path: images/openbsd.qcow2.sha256
+        uses: hcartiaux/openbsd-cloud-image/.github/workflows/build.yml@main
+        with:
+            release: ${{inputs.release}}
 
     test:
         needs: build
