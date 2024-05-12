@@ -25,21 +25,37 @@ jobs:
           run: |
             sha256sum -c images/${{inputs.filename}}.sha256
         - name: Install dependencies
-          run: sudo apt update ; sudo apt install -y qemu-system netcat-openbsd
+          run: sudo apt update ; sudo apt install -y qemu-system netcat-openbsd genisoimage
+        - name: Generate ssh keys
+          run: ssh-keygen -N ""
+        - name: generate cloud-init user-data configuration file
+          run: |
+            echo '#cloud-config'                   > user-data
+            echo 'users:'                         >> user-data
+            echo '- name: test'                   >> user-data
+            echo '  ssh_authorized_keys:'         >> user-data
+            echo "  - $(cat ~/.ssh/id_rsa.pub)"   >> user-data
+            echo 'instance-id: OpenBSD0'           > meta-data
+            echo 'local-hostname: openbsd-00'     >> meta-data
+        - name: Generate nocloud.iso
+          run: genisoimage -output nocloud.iso -volid cidata -joliet -rock user-data meta-data
         - name: Boot the system image
           run: |
             set -x
-            qemu-system-x86_64 -smp cpus=1 -m 384m -drive file="images/${{inputs.filename}}",media=disk,if=virtio \
+            qemu-system-x86_64 -smp cpus=1 -m 384m -boot c                    \
+               -drive file="images/${{inputs.filename}}",media=disk,if=virtio \
+               -drive file="nocloud.iso",media=cdrom                          \
                -device virtio-net-pci,netdev=n1 -nographic -netdev user,id=n1,hostfwd=tcp::2222-:22 &
-        - name: Wait for the VM to boot
+        - name: Wait for a successful ssh connection
           run: |
-            while [[ ! $(timeout 1 nc localhost 2222) ]] ; do
+            max=300
+            while [[ ! $(ssh -i ~/.ssh/id_rsa.pub -oPasswordAuthentication=no -oStrictHostKeyChecking=no test@localhost -p 2222 true) ]] ; do
                 sleep 1 ; try=$((try + 1))
-                if [[ "$try" -gt 300 ]] ; then
-                    echo "== System image boot failed :(  =="
+                if [[ "$try" -gt "$max" ]] ; then
+                    echo "== System configuration failed :(  =="
                     exit 1
                 fi
-                echo "== Connection attempt ${try} =="
+                echo "== Connection attempt ${try}/${max} =="
             done
-            echo "== System image is bootable ! :) =="
+            echo "== System is bootable and configured ! :) =="
 
