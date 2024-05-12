@@ -55,4 +55,4 @@ jobs:
         - uses: actions/upload-artifact@v4
           with:
               name: ${{inputs.filename}}.sha256
-              path: images/${{inputs.filename}.sha256
+              path: images/${{inputs.filename}}.sha256
