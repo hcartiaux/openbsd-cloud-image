@@ -51,7 +51,7 @@ jobs:
         - name: Wait for a successful ssh connection
           run: |
             max=300
-            while [[ ! $(ssh -i ~/.ssh/id_rsa -oPasswordAuthentication=no -oStrictHostKeyChecking=no test@localhost -p 2222 true) ]] ; do
+            while [[ ! $(ssh -i ~/.ssh/id_rsa -oPasswordAuthentication=no -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=2 test@localhost -p 2222 true) ]] ; do
                 sleep 1 ; try=$((try + 1))
                 if [[ "$try" -gt "$max" ]] ; then
                     echo "== System configuration failed :(  =="
