@@ -1,0 +1,44 @@
+on:
+  workflow_call:
+    inputs:
+      filename:
+        description: 'Qcow2 image filename'
+        default: 'openbsd.qcow2'
+        required: false
+        type: string
+
+jobs:
+    test:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/download-artifact@v4
+          with:
+            name: ${{inputs.filename}}
+            path: images
+        - uses: actions/download-artifact@v4
+          with:
+            name: ${{inputs.filename}}.sha256
+            path: images
+        - name: Verify the checksum
+          run: |
+            sha256sum -c images/${{inputs.filename}}.sha256
+        - name: Install dependencies
+          run: sudo apt update ; sudo apt install -y qemu-system netcat-openbsd
+        - name: Boot the system image
+          run: |
+            set -x
+            qemu-system-x86_64 -smp cpus=1 -m 384m -drive file="images/${{inputs.filename}}",media=disk,if=virtio \
+               -device virtio-net-pci,netdev=n1 -nographic -netdev user,id=n1,hostfwd=tcp::2222-:22 &
+        - name: Wait for the VM to boot
+          run: |
+            while [[ ! $(timeout 1 nc localhost 2222) ]] ; do
+                sleep 1 ; try=$((try + 1))
+                if [[ "$try" -gt 300 ]] ; then
+                    echo "== System image boot failed :(  =="
+                    exit 1
+                fi
+                echo "== Connection attempt ${try} =="
+            done
+            echo "== System image is bootable ! :) =="
+

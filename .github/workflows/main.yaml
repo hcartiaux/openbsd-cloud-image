@@ -15,41 +15,14 @@ jobs:
     build:
         uses: hcartiaux/openbsd-cloud-image/.github/workflows/build.yml@main
         with:
+            filename: openbsd.qcow2
             release: ${{inputs.release}}
 
     test:
         needs: build
-        runs-on: ubuntu-latest
-        steps:
-        - uses: actions/download-artifact@v4
-          with:
-            name: openbsd.qcow2
-            path: images
-        - uses: actions/download-artifact@v4
-          with:
-            name: openbsd.qcow2.sha256
-            path: images
-        - name: Verify the checksum
-          run: |
-            sha256sum -c images/openbsd.qcow2.sha256
-        - name: Install dependencies
-          run: sudo apt update ; sudo apt install -y qemu-system netcat-openbsd
-        - name: Boot the system image
-          run: |
-            set -x
-            qemu-system-x86_64 -smp cpus=1 -m 384m -drive file="images/openbsd.qcow2",media=disk,if=virtio \
-               -device virtio-net-pci,netdev=n1 -nographic -netdev user,id=n1,hostfwd=tcp::2222-:22 &
-        - name: Wait for the VM to boot
-          run: |
-            while [[ ! $(timeout 1 nc localhost 2222) ]] ; do
-                sleep 1 ; try=$((try + 1))
-                if [[ "$try" -gt 300 ]] ; then
-                    echo "== System image boot failed :(  =="
-                    exit 1
-                fi
-                echo "== Connection attempt ${try} =="
-            done
-            echo "== System image is bootable ! :) =="
+        uses: hcartiaux/openbsd-cloud-image/.github/workflows/test.yml@main
+        with:
+            filename: openbsd.qcow2
 
     release:
         needs: test
