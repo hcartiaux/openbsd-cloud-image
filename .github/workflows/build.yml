@@ -1,89 +1,56 @@
-# This is a basic workflow that is manually triggered
-name: Build OpenBSD Qcow2
-
-# Runs the action when it is triggered manually
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       release:
         description: 'OpenBSD release'
         default: '7.5'
         required: true
         type: string
+      filename:
+        description: 'Qcow2 image filename'
+        default: 'openbsd.qcow2'
+        required: false
+        type: string
+      size:
+        description: 'Qcow2 image size (GB)'
+        default: '20'
+        required: false
+        type: string
+      disklabel:
+        description: 'Disklabel filename'
+        default: 'custom/disklabel'
+        required: false
+        type: string
+      sets:
+        description: 'OpenBSD sets'
+        default: '*'
+        required: false
+        type: string
+      allow_root_ssh:
+        description: 'Allow root ssh login (yes|no)'
+        default: 'yes'
+        required: false
+        type: string
 
 jobs:
     build:
-        uses: hcartiaux/openbsd-cloud-image/.github/workflows/build.yml@main
-        with:
-            release: ${{inputs.release}}
-
-    test:
-        needs: build
         runs-on: ubuntu-latest
-        steps:
-        - uses: actions/download-artifact@v4
-          with:
-            name: openbsd.qcow2
-            path: images
-        - uses: actions/download-artifact@v4
-          with:
-            name: openbsd.qcow2.sha256
-            path: images
-        - name: Verify the checksum
-          run: |
-            sha256sum -c images/openbsd.qcow2.sha256
-        - name: Install dependencies
-          run: sudo apt update ; sudo apt install -y qemu-system netcat-openbsd
-        - name: Boot the system image
-          run: |
-            set -x
-            qemu-system-x86_64 -smp cpus=1 -m 384m -drive file="images/openbsd.qcow2",media=disk,if=virtio \
-               -device virtio-net-pci,netdev=n1 -nographic -netdev user,id=n1,hostfwd=tcp::2222-:22 &
-        - name: Wait for the VM to boot
-          run: |
-            while [[ ! $(timeout 1 nc localhost 2222) ]] ; do
-                sleep 1 ; try=$((try + 1))
-                if [[ "$try" -gt 300 ]] ; then
-                    echo "== System image boot failed :(  =="
-                    exit 1
-                fi
-                echo "== Connection attempt ${try} =="
-            done
-            echo "== System image is bootable ! :) =="
-
-    release:
-        needs: test
-        runs-on: ubuntu-latest
-        permissions: write-all
-        environment:
-          name: release
         steps:
         - name: Check out the repository to the runner
           uses: actions/checkout@v4
-        - name: Generate tag name
-          run: echo "tag=v${{ github.event.inputs.release }}_$(date +'%Y-%m-%d-%H-%M')" >> "$GITHUB_ENV"
-        - uses: actions/download-artifact@v4
+        - name: Install dependencies
+          run: sudo apt update ; sudo apt install -y signify-openbsd signify-openbsd-keys qemu-system
+        - name: Build !
+          run: |
+            ./build_openbsd_qcow2.sh -r ${{inputs.release}} --image-file ${{inputs.filename}} --size ${{inputs.size}} --disklabel ${{inputs.disklabel}} --sets ${{inputs.sets}} --allow_root_ssh ${{allow_root_ssh}} -b
+        - name: Generate the checksum file
+          run: |
+            sha256sum images/${{inputs.filename}} > images/${{inputs.filename}}.sha256
+        - uses: actions/upload-artifact@v4
           with:
-            name: openbsd.qcow2
-            path: images
-        - uses: actions/download-artifact@v4
+              name: ${{inputs.filename}}
+              path: images/openbsd.qcow2
+        - uses: actions/upload-artifact@v4
           with:
-            name: openbsd.qcow2.sha256
-            path: images
-        - name: Verify the checksum
-          run: |
-            sha256sum -c images/openbsd.qcow2.sha256
-        - name: Create a new release
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: |
-            gh release create "${tag}" \
-                --repo="$GITHUB_REPOSITORY" \
-                --title="OpenBSD Cloud Image ${tag}" \
-                --generate-notes
-        - name: Upload the Qcow2 image and checksum file
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: |
-            gh release upload "${tag}" images/openbsd.qcow2
-            gh release upload "${tag}" images/openbsd.qcow2.sha256
+              name: ${{inputs.filename}}sha256
+              path: images/openbsd.qcow2.sha256
