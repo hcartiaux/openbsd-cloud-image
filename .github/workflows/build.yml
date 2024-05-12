@@ -23,7 +23,7 @@ on:
         type: string
       sets:
         description: 'OpenBSD sets'
-        default: '*'
+        default: 'all'
         required: false
         type: string
       allow_root_ssh:
