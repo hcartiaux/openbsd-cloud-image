@@ -62,7 +62,7 @@ jobs:
           with:
             name: openbsd-generic.qcow2.sha256
             path: images
-        - name: Verify the checksum
+        - name: Verify the checksum of openbsd-generic.qcow2
           run: |
             sha256sum -c images/openbsd-generic.qcow2.sha256
         - uses: actions/download-artifact@v4
@@ -73,7 +73,7 @@ jobs:
           with:
             name: openbsd-min.qcow2.sha256
             path: images
-        - name: Verify the checksum
+        - name: Verify the checksum of openbsd-min.qcow2
           run: |
             sha256sum -c images/openbsd-min.qcow2.sha256
         - name: Create a new release
@@ -84,7 +84,7 @@ jobs:
                 --repo="$GITHUB_REPOSITORY" \
                 --title="OpenBSD Cloud Image ${tag}" \
                 --generate-notes
-        - name: Upload the Qcow2 image and checksum file
+        - name: Upload the Qcow2 and checksum files
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
