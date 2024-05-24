@@ -11,6 +11,15 @@ CLOUD_INIT_VERSION=24.1.6
 export PATH="/usr/local/bin:${PATH}"
 export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
+pkgs="
+   wget
+   python3
+"
+for pkg in ${pkgs}; do
+   echo "Installing ${pkg}"
+   pkg_add ${pkg}
+done
+
 cd /tmp
 
 echo "Downloading cloud-init ${CLOUD_INIT_VERSION}"
