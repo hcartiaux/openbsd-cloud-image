@@ -6,31 +6,10 @@ echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
 
 
 # Install cloud-init
-CLOUD_INIT_VERSION=24.1.4
+CLOUD_INIT_VERSION=24.1.6
 
 export PATH="/usr/local/bin:${PATH}"
 export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
-
-pkgs="
-   bash
-   dmidecode
-   py3-configobj
-   py3-jinja2
-   py3-jsonschema
-   py3-jsonpatch
-   py3-jsonpointer
-   py3-oauthlib
-   py3-requests
-   py3-setuptools
-   py3-serial
-   py3-yaml
-   sudo--
-   wget
-"
-for pkg in ${pkgs}; do
-   echo "Installing ${pkg}"
-   pkg_add ${pkg}
-done
 
 cd /tmp
 
