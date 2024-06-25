@@ -123,7 +123,7 @@ function build_mirror {
     exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"                     "${PATH_MIRROR}/install.conf"
     exec_cmd sed -i "s!\(HTTP.Server.=.\).*\$!\1${HTTP_SERVER}!"                "${PATH_MIRROR}/install.conf"
     exec_cmd sed -i "s!\(Allow.root.ssh.login.=.\).*\$!\1${ALLOW_ROOT_SSH}!"    "${PATH_MIRROR}/install.conf"
-    [[ ! -z "$SSH_KEY" ]] && SSH_KEY_VAL=$(cat $SSH_KEY)
+    [[ -n "$SSH_KEY" ]] && SSH_KEY_VAL=$(cat "$SSH_KEY")
     exec_cmd echo "Set name(s) = ${SETS}"                            | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
     exec_cmd echo "Public ssh key for root account = ${SSH_KEY_VAL}" | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
 
@@ -173,9 +173,9 @@ function launch_install {
                                 -device virtio-net-pci,netdev=n1                                                   \
                                 -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install
     [[ "$?" != 0 ]] && fail "Qemu returned an error"
-    exec_cmd qemu-img convert -O qcow2 -c ${IMAGE_NAME} ${IMAGE_NAME}_compressed
+    exec_cmd qemu-img convert -O qcow2 -c "${IMAGE_NAME}" "${IMAGE_NAME}_compressed"
     [[ "$?" != 0 ]] && fail "Qemu-img returned an error"
-    exec_cmd mv -f ${IMAGE_NAME}_compressed ${IMAGE_NAME}
+    exec_cmd mv -f "${IMAGE_NAME}_compressed" "${IMAGE_NAME}"
 }
 
 ####
@@ -204,7 +204,7 @@ OPTIONS
     Build !
 
   --image-file FILE_NAME
-    File name of the image file, created in ./images (default: $(basename $IMAGE_NAME)
+    File name of the image file, created in ./images (default: $(basename "${IMAGE_NAME}")
 
   -s --size SIZE
     QCow2 disk size in GB (default: ${IMAGE_SIZE})
@@ -271,7 +271,7 @@ done
 [[ ! "${ALLOW_ROOT_SSH}"  =~ ^(yes|no)+$                                   ]] && fail "Invalid parameter value for --allow-root-ssh (yes or no)"
 [[ ! -e "${DISKLABEL}"                                                     ]] && fail "Non existing disklabel file"
 [[ ! -e "${INSTALLCONF}"                                                   ]] && fail "Non existing install.conf file"
-[[ ! -z "${SSH_KEY}" && ! -e "${SSH_KEY}"                                  ]] && fail "Non existing SSH public key file"
+[[ -n "${SSH_KEY}" && ! -e "${SSH_KEY}"                                    ]] && fail "Non existing SSH public key file"
 
 if [[ -z "$RUN" ]]; then
     print_help
