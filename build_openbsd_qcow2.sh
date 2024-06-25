@@ -204,7 +204,7 @@ OPTIONS
     Build !
 
   --image-file FILE_NAME
-    File name of the image file, created in ./images (default: $(basename "${IMAGE_NAME}")
+    File name of the image file, created in ./images (default: $(basename "${IMAGE_NAME}"))
 
   -s --size SIZE
     QCow2 disk size in GB (default: ${IMAGE_SIZE})
