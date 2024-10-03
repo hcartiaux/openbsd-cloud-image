@@ -6,7 +6,7 @@ echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
 
 
 # Install cloud-init
-CLOUD_INIT_VERSION=24.1.6
+CLOUD_INIT_VERSION=24.3
 
 export PATH="/usr/local/bin:${PATH}"
 export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
