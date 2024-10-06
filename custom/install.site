@@ -30,6 +30,13 @@ cd "cloud-init-${CLOUD_INIT_VERSION}"
 echo "Installing cloud-init"
 ./tools/build-on-openbsd
 
+rm -f /etc/rc.local
+
+rcctl enable cloudinitlocal
+rcctl enable cloudinit
+rcctl enable cloudconfig
+rcctl enable cloudfinal
+
 cd /tmp
 rm -r "/tmp/cloud-init-${CLOUD_INIT_VERSION}"
 
@@ -37,10 +44,6 @@ rm -r "/tmp/cloud-init-${CLOUD_INIT_VERSION}"
 # Should be solved by PR #5770. See #5781 for explanations:
 # https://github.com/canonical/cloud-init/pull/5781
 sed -i '112d' /usr/local/lib/python3*/site-packages/cloud_init-*/cloudinit/cmd/main.py
-# ds-identify does not support OpenBSD
-# see: https://github.com/canonical/cloud-init/issues/4711
-sed -i '/ds-identify/d' /etc/rc.local
-
 
 # Clean-up the network config
 rm -f /etc/resolv.conf /etc/hostname.*
