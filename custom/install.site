@@ -16,7 +16,7 @@ rdate pool.ntp.org
 
 pkgs="
    wget
-   python3
+   python%3
 "
 for pkg in ${pkgs}; do
    echo "Installing ${pkg}"
