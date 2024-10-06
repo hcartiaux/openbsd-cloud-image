@@ -11,6 +11,9 @@ CLOUD_INIT_VERSION=24.3.1
 export PATH="/usr/local/bin:${PATH}"
 export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
+# Fix the time to prevent TLS errors
+rdate pool.ntp.org
+
 pkgs="
    wget
    python3
