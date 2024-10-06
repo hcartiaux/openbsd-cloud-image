@@ -35,6 +35,9 @@ echo "Installing cloud-init"
 
 rm -f /etc/rc.local
 
+# Temporary fix
+sed -i '/rc_bg=/d' /etc/rc.d/cloud*
+
 rcctl enable cloudinitlocal
 rcctl enable cloudinit
 rcctl enable cloudconfig
