@@ -34,7 +34,7 @@ PATH_TFTP="${TOP_DIR}/tftp"
 OPENBSD_VERSION="7.6"
 OPENBSD_ARCH=amd64
 
-OPENBSD_TRUSTED_MIRROR_BASE="https://ftp.openbsd.org/pub/OpenBSD"
+OPENBSD_TRUSTED_MIRROR_BASE="https://cdn.openbsd.org/pub/OpenBSD"
 OPENBSD_MIRROR_BASE="https://cdn.openbsd.org/pub/OpenBSD"
 OPENBSD_TRUSTED_MIRROR=""
 OPENBSD_MIRROR=""
