@@ -6,7 +6,7 @@ echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
 
 
 # Install cloud-init
-CLOUD_INIT_VERSION=24.3
+CLOUD_INIT_VERSION=24.3.1
 
 export PATH="/usr/local/bin:${PATH}"
 export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
@@ -33,6 +33,10 @@ echo "Installing cloud-init"
 cd /tmp
 rm -r "/tmp/cloud-init-${CLOUD_INIT_VERSION}"
 
+# Cloud-init 24.3.1 is broken on OpenBSD without this hack.
+# Should be solved by PR #5770. See #5781 for explanations:
+# https://github.com/canonical/cloud-init/pull/5781
+sed -i '112d' /usr/local/lib/python3*/site-packages/cloud_init-*/cloudinit/cmd/main.py
 # ds-identify does not support OpenBSD
 # see: https://github.com/canonical/cloud-init/issues/4711
 sed -i '/ds-identify/d' /etc/rc.local
