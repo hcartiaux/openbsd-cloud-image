@@ -53,6 +53,7 @@ function add_part {
 stop_services
 add_swap 400m
 add_part /tmp 1000m
+chmod 1777 /tmp
 add_part /var 4000m
 add_part /usr 5000m
 add_part /usr/local 6000m
