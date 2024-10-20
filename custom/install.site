@@ -1,18 +1,21 @@
 #! /bin/ksh
 set -o errexit
 
-# Setting /etc/installurl
-echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
-
-
-# Install cloud-init
-CLOUD_INIT_VERSION=24.3.1
-
 export PATH="/usr/local/bin:${PATH}"
 export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
+# Setting /etc/installurl
+echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
+
 # Fix the time to prevent TLS errors
 rdate pool.ntp.org
+
+
+
+#######################
+# Cloud-init installation
+#######################
+CLOUD_INIT_VERSION=24.3.1
 
 pkgs="
    wget
@@ -31,7 +34,9 @@ tar xzf ${CLOUD_INIT_VERSION}.tar.gz
 
 cd "cloud-init-${CLOUD_INIT_VERSION}"
 
+###########
 # Patching cloud-init bugs
+###########
 
 # Cloud-init 24.3.1 is broken on OpenBSD without this hack.
 # Should be solved by PR #5770. See #5781 for explanations:
@@ -44,21 +49,25 @@ sed -i 's!_ROOT_TMPDIR = "/run/cloud-init/tmp"!_ROOT_TMPDIR = "/var/run/cloud-in
 # Fix sysvinit scripts, included in PR #5790
 sed -i '/rc_bg=/d' sysvinit/openbsd/cloud*
 
+###########
+# Start the install script
+###########
 
-#######################
-# Installing cloud-init
 ./tools/build-on-openbsd
-#######################
 
-# Enable cloud-init services, see PR #5790
+###########
+# Convert to sysv init scripts, see PR#5790
+###########
+
+rm -f /etc/rc.local
 rcctl enable cloudinitlocal
 rcctl enable cloudinit
 rcctl enable cloudconfig
 rcctl enable cloudfinal
 
-# rc.local should not be used anymore, see PR #5790
-rm -f /etc/rc.local
-
+###########
+# Clean-up
+###########
 
 cd /tmp
 rm -r "/tmp/cloud-init-${CLOUD_INIT_VERSION}"
