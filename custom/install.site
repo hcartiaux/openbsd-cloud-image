@@ -10,12 +10,10 @@ echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
 # Fix the time to prevent TLS errors
 rdate pool.ntp.org
 
-
-
 #######################
 # Cloud-init installation
 #######################
-CLOUD_INIT_VERSION=24.3.1
+CLOUD_INIT_VERSION=24.4
 
 pkgs="
    wget
@@ -38,32 +36,14 @@ cd "cloud-init-${CLOUD_INIT_VERSION}"
 # Patching cloud-init bugs
 ###########
 
-# Cloud-init 24.3.1 is broken on OpenBSD without this hack.
-# Should be solved by PR #5770. See #5781 for explanations:
-# https://github.com/canonical/cloud-init/pull/5781
-sed -i '112d' cloudinit/cmd/main.py
-
 # Fix wrong hardcoded path, see #5789
 sed -i 's!_ROOT_TMPDIR = "/run/cloud-init/tmp"!_ROOT_TMPDIR = "/var/run/cloud-init/tmp"!' cloudinit/temp_utils.py
-
-# Fix sysvinit scripts, included in PR #5790
-sed -i '/rc_bg=/d' sysvinit/openbsd/cloud*
 
 ###########
 # Start the install script
 ###########
 
 ./tools/build-on-openbsd
-
-###########
-# Convert to sysv init scripts, see PR#5790
-###########
-
-rm -f /etc/rc.local
-rcctl enable cloudinitlocal
-rcctl enable cloudinit
-rcctl enable cloudconfig
-rcctl enable cloudfinal
 
 ###########
 # Clean-up
