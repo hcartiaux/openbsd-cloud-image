@@ -39,6 +39,9 @@ cd "cloud-init-${CLOUD_INIT_VERSION}"
 # Fix wrong hardcoded path, see #5789
 sed -i 's!_ROOT_TMPDIR = "/run/cloud-init/tmp"!_ROOT_TMPDIR = "/var/run/cloud-init/tmp"!' cloudinit/temp_utils.py
 
+# Fix wrong hardcoded path, see #5992
+sed -i 's!^    usr_lib_exec = "/usr/lib"!    usr_lib_exec = "/usr/local/lib"!' cloudinit/distros/__init__.py
+
 ###########
 # Start the install script
 ###########
