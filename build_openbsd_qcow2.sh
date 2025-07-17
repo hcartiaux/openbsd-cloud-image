@@ -59,7 +59,7 @@ function warning    { echo "[WARNING] $1"; }
 function fail       { echo "[FAIL] $*" 1>&2 && exit 1; }
 function report     { echo "[INFO] $*"; }
 function exec_cmd   {
-    if [ "$DRY_RUN" == "DEBUG" ] ; then
+    if [ "$DRY_RUN" == "DEBUG" ]; then
         if [[ $1 == "bg" ]]; then
             shift
             echo "[DRY-RUN] $* &"
@@ -80,16 +80,16 @@ function exec_cmd   {
 
 function check_program {
     program="$1"
-    exec_cmd command -v "${program}" || \
+    exec_cmd command -v "${program}" ||
         fail "You need ${program} installed and in the path"
 }
 
 function check_for_programs {
     check_program sudo
     if grep -E 'Debian|Ubuntu' /etc/os-release > /dev/null 2>&1; then
-	SIGNIFY_CMD=signify-openbsd
+        SIGNIFY_CMD=signify-openbsd
     else
-	SIGNIFY_CMD=signify
+        SIGNIFY_CMD=signify
     fi
     check_program $SIGNIFY_CMD
     check_program qemu-img
@@ -103,8 +103,7 @@ function build_mirror {
 
     exec_cmd curl --fail -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}" "${OPENBSD_TRUSTED_MIRROR}/openbsd-${v}-base.pub"
 
-    for i in $files SHA256.sig
-    do
+    for i in $files SHA256.sig; do
         exec_cmd curl --fail -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}" "${OPENBSD_MIRROR}/${OPENBSD_ARCH}/$i"
     done
 
@@ -135,8 +134,7 @@ function start_mirror {
     trap "report [7/7] Stop the HTTP mirror server ; exec_cmd kill $(jobs -p)" EXIT
     report Waiting for the HTTP mirror server to be available
     try=0
-    while [ ! "$(exec_cmd curl --fail --silent 'http://127.0.0.1/install.conf')" ]
-    do
+    while [ ! "$(exec_cmd curl --fail --silent 'http://127.0.0.1/install.conf')" ]; do
         exec_cmd sleep 1
         try=$((try + 1))
         [[ "$try" -gt 10 ]] && fail "Could not start the HTTP mirror server"
