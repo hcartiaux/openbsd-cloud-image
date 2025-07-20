@@ -218,7 +218,7 @@ OPTIONS
     --sets "<SET NAMES>"
       Specify the sets to be installed (default: ${SETS})
 
-    --allow-root-ssh [yes|no]
+    --allow_root_ssh [yes|no]
       Allow root ssh login (default: ${ALLOW_ROOT_SSH})
 
 AUTHOR
