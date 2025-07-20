@@ -89,11 +89,11 @@ function check_for_programs {
 }
 
 function build_mirror {
-    files="base${v}.tgz bsd bsd.mp bsd.rd comp${v}.tgz game${v}.tgz man${v}.tgz pxeboot xbase${v}.tgz xfont${v}.tgz xserv${v}.tgz xshare${v}.tgz BUILDINFO"
+    files=("base${v}.tgz" "bsd" "bsd.mp" "bsd.rd" "comp${v}.tgz" "game${v}.tgz" "man${v}.tgz" "pxeboot" "xbase${v}.tgz" "xfont${v}.tgz" "xserv${v}.tgz" "xshare${v}.tgz" "BUILDINFO")
 
     exec_cmd curl --fail -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}" "${OPENBSD_TRUSTED_MIRROR}/openbsd-${v}-base.pub"
 
-    for i in $files SHA256.sig; do
+    for i in "${files[@]}" SHA256.sig; do
         exec_cmd curl --fail -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}" "${OPENBSD_MIRROR}/${OPENBSD_ARCH}/$i"
     done
 
@@ -102,17 +102,17 @@ function build_mirror {
 
     exec_cmd cd "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}"
     exec_cmd ls -l | tail -n +2 | exec_cmd tee index.txt
-    exec_cmd $SIGNIFY_CMD -C -p "../openbsd-${v}-base.pub" -x SHA256.sig -- $files
-    [[ "$?" != 0 ]] && fail "Signature verifications failed"
-
+    if ! exec_cmd $SIGNIFY_CMD -C -p "../openbsd-${v}-base.pub" -x SHA256.sig -- "${files[@]}" ; then
+        fail "Signature verifications failed"
+    fi
     exec_cmd cd "${TOP_DIR}"
     exec_cmd cp -f "${INSTALLCONF}" "${PATH_MIRROR}/install.conf"
-    [[ -n "$SSH_KEY" ]] && SSH_KEY_VAL=$(cat "$SSH_KEY")
     exec_cmd "sed -i 's!site[0-9]*.tgz!site${v}.tgz!'                            '${PATH_MIRROR}/install.conf'"
     exec_cmd "sed -i 's!\(disklabel = \).*\$!\1http://${HTTP_SERVER}/disklabel!' '${PATH_MIRROR}/install.conf'"
     exec_cmd "sed -i 's!\(hostname = \).*\$!\1${HOST_NAME}!'                     '${PATH_MIRROR}/install.conf'"
     exec_cmd "sed -i 's!\(HTTP Server = \).*\$!\1${HTTP_SERVER}!'                '${PATH_MIRROR}/install.conf'"
     exec_cmd "sed -i 's!\(Allow root ssh login = \).*\$!\1${ALLOW_ROOT_SSH}!'    '${PATH_MIRROR}/install.conf'"
+    [ -n "$SSH_KEY" ] && SSH_KEY_VAL=$(cat "$SSH_KEY")
     exec_cmd "echo 'Set name(s) = ${SETS}'                                    >> '${PATH_MIRROR}/install.conf'"
     exec_cmd "echo 'Public ssh key for root account = ${SSH_KEY_VAL}'         >> '${PATH_MIRROR}/install.conf'"
 
@@ -121,13 +121,13 @@ function build_mirror {
 
 function start_mirror {
     exec_cmd 'sudo python3 -m http.server --directory mirror --bind 127.0.0.1 80 &'
-    trap "report [7/7] Stop the HTTP mirror server ; exec_cmd kill $(jobs -p)" EXIT
+    trap 'report [7/7] Stop the HTTP mirror server ; exec_cmd kill $(jobs -p)' EXIT
     report Waiting for the HTTP mirror server to be available
     try=0
     while [ ! "$(exec_cmd curl --fail --silent 'http://127.0.0.1/install.conf')" ]; do
         exec_cmd sleep 1
         try=$((try + 1))
-        [[ "$try" -gt 10 ]] && fail "Could not start the HTTP mirror server"
+        [ "$try" -gt 10 ] && fail "Could not start the HTTP mirror server"
     done
     report HTTP mirror server reachable
 }
@@ -142,13 +142,14 @@ function build_tftp {
 
 function create_image {
     exec_cmd mkdir -p "${PATH_IMAGES}"
-    exec_cmd qemu-img create -f qcow2 "${IMAGE_NAME}" "${IMAGE_SIZE}G"
-    [[ "$?" != 0 ]] && fail "Error while creating the image file ${IMAGE_NAME}"
+    if ! exec_cmd qemu-img create -f qcow2 "${IMAGE_NAME}" "${IMAGE_SIZE}G"; then
+        fail "Error while creating the image file ${IMAGE_NAME}"
+    fi
 }
 
 function qemu_enable_kvm {
     if grep -E 'vmx|svm' /proc/cpuinfo > /dev/null 2>&1; then
-        [[ -w /dev/kvm ]] && echo -n "-enable-kvm"
+        [ -w /dev/kvm ] && echo -n "-enable-kvm"
     fi
 }
 
@@ -156,13 +157,15 @@ function launch_install {
     # Skip lines to preserve the output
     exec_cmd seq $(( $(tput lines) + 2  )) | exec_cmd tr -dc '\n'
     # Start qemu
-    exec_cmd qemu-system-x86_64 $(qemu_enable_kvm) -nographic -action reboot=shutdown -boot once=n                 \
+    if ! exec_cmd qemu-system-x86_64 "$(qemu_enable_kvm)" -nographic -action reboot=shutdown -boot once=n               \
                                 -smp cpus=$QEMU_CPUS -m $QEMU_MEM -drive file="${IMAGE_NAME}",media=disk,if=virtio \
                                 -device virtio-net-pci,netdev=n1                                                   \
-                                -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install
-    [[ "$?" != 0 ]] && fail "Qemu returned an error"
-    exec_cmd qemu-img convert -O qcow2 -c "${IMAGE_NAME}" "${IMAGE_NAME}_compressed"
-    [[ "$?" != 0 ]] && fail "Qemu-img returned an error"
+                                -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install; then
+        fail "Qemu returned an error"
+    fi
+    if ! exec_cmd qemu-img convert -O qcow2 -c "${IMAGE_NAME}" "${IMAGE_NAME}_compressed"; then
+        fail "Qemu-img returned an error"
+    fi
     exec_cmd mv -f "${IMAGE_NAME}_compressed" "${IMAGE_NAME}"
 }
 
