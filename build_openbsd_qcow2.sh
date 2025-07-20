@@ -60,20 +60,10 @@ function fail       { echo "[FAIL] $*" 1>&2 && exit 1; }
 function report     { echo "[INFO] $*"; }
 function exec_cmd   {
     if [ "$DRY_RUN" == "DEBUG" ]; then
-        if [[ $1 == "bg" ]]; then
-            shift
-            echo "[DRY-RUN] $* &"
-        else
-            echo "[DRY-RUN] $*"
-        fi
+        echo "[DRY-RUN] $*"
     else
         echo "[CMD] $*"
-        if [[ $1 == "bg" ]]; then
-            shift
-            $* &
-        else
-            $*
-        fi
+        eval "$*"
         return $?
     fi
 }
@@ -117,20 +107,20 @@ function build_mirror {
 
     exec_cmd cd "${TOP_DIR}"
     exec_cmd cp -f "${INSTALLCONF}" "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!site[0-9]*.tgz!site${v}.tgz!"                            "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!\(disklabel.=.\).*\$!\1http://${HTTP_SERVER}/disklabel!" "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!\(hostname.=.\).*\$!\1${HOST_NAME}!"                     "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!\(HTTP.Server.=.\).*\$!\1${HTTP_SERVER}!"                "${PATH_MIRROR}/install.conf"
-    exec_cmd sed -i "s!\(Allow.root.ssh.login.=.\).*\$!\1${ALLOW_ROOT_SSH}!"    "${PATH_MIRROR}/install.conf"
     [[ -n "$SSH_KEY" ]] && SSH_KEY_VAL=$(cat "$SSH_KEY")
-    exec_cmd echo "Set name(s) = ${SETS}"                            | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
-    exec_cmd echo "Public ssh key for root account = ${SSH_KEY_VAL}" | tail -n 1 | exec_cmd tee -a "${PATH_MIRROR}/install.conf"
+    exec_cmd "sed -i 's!site[0-9]*.tgz!site${v}.tgz!'                            '${PATH_MIRROR}/install.conf'"
+    exec_cmd "sed -i 's!\(disklabel = \).*\$!\1http://${HTTP_SERVER}/disklabel!' '${PATH_MIRROR}/install.conf'"
+    exec_cmd "sed -i 's!\(hostname = \).*\$!\1${HOST_NAME}!'                     '${PATH_MIRROR}/install.conf'"
+    exec_cmd "sed -i 's!\(HTTP Server = \).*\$!\1${HTTP_SERVER}!'                '${PATH_MIRROR}/install.conf'"
+    exec_cmd "sed -i 's!\(Allow root ssh login = \).*\$!\1${ALLOW_ROOT_SSH}!'    '${PATH_MIRROR}/install.conf'"
+    exec_cmd "echo 'Set name(s) = ${SETS}'                                    >> '${PATH_MIRROR}/install.conf'"
+    exec_cmd "echo 'Public ssh key for root account = ${SSH_KEY_VAL}'         >> '${PATH_MIRROR}/install.conf'"
 
     exec_cmd ln -sf "../${DISKLABEL}" "${PATH_MIRROR}/disklabel"
 }
 
 function start_mirror {
-    exec_cmd bg sudo python3 -m http.server --directory mirror --bind 127.0.0.1 80
+    exec_cmd 'sudo python3 -m http.server --directory mirror --bind 127.0.0.1 80 &'
     trap "report [7/7] Stop the HTTP mirror server ; exec_cmd kill $(jobs -p)" EXIT
     report Waiting for the HTTP mirror server to be available
     try=0
@@ -157,7 +147,7 @@ function create_image {
 }
 
 function qemu_enable_kvm {
-    if exec_cmd grep -E 'vmx|svm' /proc/cpuinfo > /dev/null 2>&1; then
+    if grep -E 'vmx|svm' /proc/cpuinfo > /dev/null 2>&1; then
         [[ -w /dev/kvm ]] && echo -n "-enable-kvm"
     fi
 }
