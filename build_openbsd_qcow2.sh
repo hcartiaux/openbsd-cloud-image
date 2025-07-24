@@ -157,7 +157,7 @@ function launch_install {
     # Skip lines to preserve the output
     exec_cmd seq $(( $(tput lines) + 2  )) | exec_cmd tr -dc '\n'
     # Start qemu
-    if ! exec_cmd qemu-system-x86_64 "$(qemu_enable_kvm)" -nographic -action reboot=shutdown -boot once=n               \
+    if ! exec_cmd qemu-system-x86_64 "$(qemu_enable_kvm)" -nographic -action reboot=shutdown -boot once=n          \
                                 -smp cpus=$QEMU_CPUS -m $QEMU_MEM -drive file="${IMAGE_NAME}",media=disk,if=virtio \
                                 -device virtio-net-pci,netdev=n1                                                   \
                                 -netdev user,id=n1,hostname=openbsd-vm,tftp=tftp,bootfile=auto_install; then
@@ -287,4 +287,3 @@ else
     launch_install
     report "QCow2 image generated: ${IMAGE_NAME}"
 fi
-
