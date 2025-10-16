@@ -21,7 +21,7 @@ pkgs="
 "
 for pkg in ${pkgs}; do
    echo "Installing ${pkg}"
-   pkg_add ${pkg}
+   pkg_add "${pkg}"
 done
 
 cd /tmp
