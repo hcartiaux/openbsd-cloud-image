@@ -67,21 +67,5 @@ echo "to match your expectations and run the script as root."            >> /etc
 rm /install.site
 
 # Zero out free space (reduce the image size)
-parts="
-  /
-  swap
-  /usr
-  /tmp
-  /var
-  /usr/X11R6
-  /usr/local
-  /usr/src
-  /usr/obj
-  /home
-"
-for part in ${parts}; do
-  dd if=/dev/zero of="${part}/zero.dat" bs=1M || true
-done
-for part in ${parts}; do
-  rm -f "${part}/zero.dat"
-done
+dd if=/dev/zero of=/zero.dat bs=1M || true
+rm -f /zero.dat
