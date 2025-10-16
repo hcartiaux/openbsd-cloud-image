@@ -13,7 +13,7 @@ rdate pool.ntp.org
 #######################
 # Cloud-init installation
 #######################
-CLOUD_INIT_VERSION=25.1.2
+CLOUD_INIT_VERSION=25.2
 
 pkgs="
    wget
