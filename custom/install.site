@@ -65,3 +65,7 @@ echo "remaining disk space by adjusting /root/bin/create_partitions.sh"  >> /etc
 echo "to match your expectations and run the script as root."            >> /etc/motd
 
 rm /install.site
+
+# Zero out free space (reduce the image size)
+dd if=/dev/zero of=/zero.dat bs=1M || true
+rm -f /zero.dat
