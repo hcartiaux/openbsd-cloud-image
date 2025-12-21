@@ -16,7 +16,6 @@ rdate pool.ntp.org
 CLOUD_INIT_VERSION=25.2
 
 pkgs="
-   wget
    python%3
 "
 for pkg in ${pkgs}; do
@@ -27,7 +26,7 @@ done
 cd /tmp
 
 echo "Downloading cloud-init ${CLOUD_INIT_VERSION}"
-wget "https://github.com/canonical/cloud-init/archive/refs/tags/${CLOUD_INIT_VERSION}.tar.gz"
+ftp "https://github.com/canonical/cloud-init/archive/refs/tags/${CLOUD_INIT_VERSION}.tar.gz"
 tar xzf ${CLOUD_INIT_VERSION}.tar.gz
 
 cd "cloud-init-${CLOUD_INIT_VERSION}"
