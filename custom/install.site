@@ -41,6 +41,11 @@ sed -i 's!_ROOT_TMPDIR = "/run/cloud-init/tmp"!_ROOT_TMPDIR = "/var/run/cloud-in
 # Fix wrong hardcoded path, see #5992
 sed -i 's!^    usr_lib_exec = "/usr/lib"!    usr_lib_exec = "/usr/local/lib"!' cloudinit/distros/__init__.py
 
+# The dmidecode package is only available on i386 & amd64
+if ! pkg_info dmidecode > /dev/null 2>&1 ; then
+   sed -i '/dmidecode/d' tools/build-on-openbsd
+fi
+
 ###########
 # Start the install script
 ###########
