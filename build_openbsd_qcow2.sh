@@ -40,7 +40,7 @@ OPENBSD_TRUSTED_MIRROR=""
 OPENBSD_MIRROR=""
 
 IMAGE_SIZE=20
-IMAGE_NAME="${PATH_IMAGES}/openbsd${v}_$(date +%Y-%m-%d).qcow2"
+IMAGE_NAME=""
 
 QEMU_CPUS=2
 QEMU_MEM=384m
@@ -269,6 +269,7 @@ if [[ -z "$RUN" ]]; then
     exit 0
 else
     v=${OPENBSD_VERSION//./}
+    IMAGE_NAME="${PATH_IMAGES}/openbsd${v}_$(date +%Y-%m-%d).qcow2"
     SETS="${SETS} site${v}.tgz"
     OPENBSD_MIRROR="${OPENBSD_MIRROR_BASE}/${OPENBSD_VERSION}"
     OPENBSD_TRUSTED_MIRROR="${OPENBSD_TRUSTED_MIRROR_BASE}/${OPENBSD_VERSION}"
