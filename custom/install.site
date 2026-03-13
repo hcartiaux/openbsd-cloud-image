@@ -53,6 +53,18 @@ fi
 ./tools/build-on-openbsd
 
 ###########
+# Patching cloud-init generated config
+###########
+
+# Fix: update_etc_hosts requires hosts.openbsd.tmpl which is absent on OpenBSD
+# causing a permanent status:failed at every boot
+sed -i 's/^  - update_etc_hosts/  # - update_etc_hosts/' /etc/cloud/cloud.cfg
+
+# Fix: sudo entry generated unconditionally for all variants including OpenBSD
+# where sudo is not the standard privilege escalation tool
+sed -i '/    sudo: \[\"ALL=(ALL) NOPASSWD:ALL\"\]/d' /etc/cloud/cloud.cfg
+
+###########
 # Clean-up
 ###########
 
