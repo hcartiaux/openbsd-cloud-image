@@ -17,6 +17,7 @@ CLOUD_INIT_VERSION=26.2
 
 pkgs="
    python%3
+   py3-passlib
 "
 for pkg in ${pkgs}; do
    echo "Installing ${pkg}"
