@@ -13,7 +13,7 @@ rdate pool.ntp.org
 #######################
 # Cloud-init installation
 #######################
-CLOUD_INIT_VERSION=25.2
+CLOUD_INIT_VERSION=26.2
 
 pkgs="
    python%3
@@ -34,12 +34,6 @@ cd "cloud-init-${CLOUD_INIT_VERSION}"
 ###########
 # Patching cloud-init bugs
 ###########
-
-# Fix wrong hardcoded path, see #5789
-sed -i 's!_ROOT_TMPDIR = "/run/cloud-init/tmp"!_ROOT_TMPDIR = "/var/run/cloud-init/tmp"!' cloudinit/temp_utils.py
-
-# Fix wrong hardcoded path, see #5992
-sed -i 's!^    usr_lib_exec = "/usr/lib"!    usr_lib_exec = "/usr/local/lib"!' cloudinit/distros/__init__.py
 
 # The dmidecode package is only available on i386 & amd64
 if ! pkg_info dmidecode > /dev/null 2>&1 ; then
