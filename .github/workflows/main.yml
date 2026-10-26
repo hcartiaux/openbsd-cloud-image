@@ -26,7 +26,7 @@ jobs:
         with:
             filename: openbsd-min.qcow2
             release: ${{inputs.release}}
-            size: 2
+            size: 3
             disklabel: custom/disklabel.cloud
             sets: -game*.tgz -x*.tgz
             allow_root_ssh: no
