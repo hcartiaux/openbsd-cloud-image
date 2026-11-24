@@ -97,8 +97,11 @@ function build_mirror {
         exec_cmd curl --fail -C - -O --create-dirs --output-dir "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}" "${OPENBSD_MIRROR}/${OPENBSD_ARCH}/$i"
     done
 
-    exec_cmd cd "${TOP_DIR}/custom"
-    exec_cmd tar -czf "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/amd64/site${v}.tgz"  --transform 's,^create_partitions.sh,root/bin/create_partitions.sh,' install.site create_partitions.sh
+    # The installed system uses the same mirror as the build: fill it into a copy of install.site
+    exec_cmd mkdir -p "${PATH_MIRROR}/site"
+    exec_cmd cp -pf "${TOP_DIR}/custom/install.site" "${PATH_MIRROR}/site/"
+    exec_cmd "sed -i 's!@INSTALLURL@!${OPENBSD_MIRROR_BASE}!' '${PATH_MIRROR}/site/install.site'"
+    exec_cmd tar -czf "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/amd64/site${v}.tgz"  --transform 's,^create_partitions.sh,root/bin/create_partitions.sh,' -C "${PATH_MIRROR}/site" install.site -C "${TOP_DIR}/custom" create_partitions.sh
 
     exec_cmd cd "${PATH_MIRROR}/pub/OpenBSD/${OPENBSD_VERSION}/${OPENBSD_ARCH}"
     exec_cmd ls -l | tail -n +2 | exec_cmd tee index.txt
