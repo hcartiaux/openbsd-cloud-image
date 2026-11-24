@@ -4,8 +4,8 @@ set -o errexit
 export PATH="/usr/local/bin:${PATH}"
 export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
-# Setting /etc/installurl
-echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
+# Setting /etc/installurl: the build fills in OPENBSD_MIRROR_BASE (see build_mirror)
+echo "@INSTALLURL@" > /etc/installurl
 
 # Fix the time to prevent TLS errors
 rdate pool.ntp.org
